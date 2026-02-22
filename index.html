@@ -1243,9 +1243,10 @@ function updateIva(val) {
 }
 
 function totals() {
-  const sub = APP.cart.reduce((a, i) => a + fp(i) * i.qty, 0);
-  const iva = sub * (IVA_RATE / 100);
-  return { sub, iva, total: sub + iva };
+  const total = APP.cart.reduce((a, i) => a + fp(i) * i.qty, 0);
+  const iva   = total * IVA_RATE / (100 + IVA_RATE);
+  const sub   = total - iva;
+  return { sub, iva, total };
 }
 
 /* ═══════════════════════════════════════════
