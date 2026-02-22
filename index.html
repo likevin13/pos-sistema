@@ -2086,7 +2086,7 @@ async function loadDataFromSupabase() {
     DB.saveCats(CATS);
     APP.products = (prods && prods.length)
       ? prods.map(p => ({ id: p.id, name: p.nombre, price: p.precio, cost: p.costo || 0, emoji: p.emoji || '📦', cat: p.categoria, stock: p.stock || 0, discount: p.descuento || 0 }))
-      : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      : [];
     DB.saveProducts(APP.products);
     if (ventas && ventas.length) {
       DB.saveSales(ventas.map(v => ({
