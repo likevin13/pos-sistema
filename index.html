@@ -1820,14 +1820,14 @@ function renderReports() {
   const totalRev   = sales.reduce((a, s) => a + s.total, 0);
   const totalIva   = sales.reduce((a, s) => a + s.iva, 0);
   const totalCost  = sales.reduce((a, s) => a + s.items.reduce((b, i) => b + (i.cost || 0) * i.qty, 0), 0);
-  const totalProfit = totalRev - totalIva - totalCost;
+  const totalProfit = totalRev - totalCost;
   const avgSale    = sales.length ? totalRev / sales.length : 0;
   const totalUnits = sales.reduce((a, s) => a + s.items.reduce((b, i) => b + i.qty, 0), 0);
 
   // KPI cards
   document.getElementById('reportKPIs').innerHTML = `
     <div class="stat-card blue"><div class="stat-card-label">Ingresos totales</div><div class="stat-card-value">${fmt(totalRev)}</div><div class="stat-card-sub">IVA incluido: ${fmt(totalIva)}</div></div>
-    <div class="stat-card green"><div class="stat-card-label">Ganancia neta</div><div class="stat-card-value">${fmt(totalProfit)}</div><div class="stat-card-sub">Ingresos − IVA − costos</div></div>
+    <div class="stat-card green"><div class="stat-card-label">Ganancia neta</div><div class="stat-card-value">${fmt(totalProfit)}</div><div class="stat-card-sub">Ingresos − costos</div></div>
     <div class="stat-card orange"><div class="stat-card-label">Ticket promedio</div><div class="stat-card-value">${fmt(avgSale)}</div><div class="stat-card-sub">por venta</div></div>
     <div class="stat-card navy"><div class="stat-card-label">Ventas</div><div class="stat-card-value">${sales.length}</div><div class="stat-card-sub">${totalUnits} unidades vendidas</div></div>`;
 
