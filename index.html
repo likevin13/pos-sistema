@@ -634,6 +634,69 @@
     body.dark .auth-card { background: rgba(12,24,48,0.97); border-color: rgba(166,136,104,0.20); }
     body.dark .auth-field input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white; }
 
+    /* ══ ROLE OVERLAY ══ */
+    .role-overlay {
+      position: fixed; inset: 0; z-index: 9998;
+      background: var(--bg);
+      display: none; align-items: center; justify-content: center;
+    }
+    .role-card {
+      background: var(--white); border-radius: 24px; padding: 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: var(--shadow-lg); border: 1px solid rgba(166,136,104,0.15);
+      text-align: center;
+    }
+    .role-title { font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .role-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .role-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .role-btn {
+      padding: 24px 16px; border-radius: 16px; border: 2px solid var(--border);
+      background: var(--bg); cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .role-btn:hover { border-color: var(--gold); background: rgba(166,136,104,0.06); transform: translateY(-2px); }
+    .role-btn.selected { border-color: var(--gold); background: rgba(166,136,104,0.10); }
+    .role-btn-icon { font-size: 32px; }
+    .role-btn-label { font-size: 14px; font-weight: 700; color: var(--dark); }
+    .role-btn-desc { font-size: 11px; color: var(--muted); }
+    .role-pin-section { display: none; }
+    .role-pin-section.show { display: block; animation: fadeIn 0.2s ease; }
+    .role-pin-label { font-size: 11px; font-weight: 700; color: var(--mid); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .role-pin-input {
+      width: 100%; padding: 13px 14px; background: var(--bg);
+      border: 2px solid var(--border); border-radius: 12px;
+      font-family: 'Lato', sans-serif; font-size: 24px; font-weight: 700;
+      color: var(--dark); outline: none; text-align: center; letter-spacing: 10px;
+      transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .role-pin-input:focus { border-color: var(--gold); }
+    .role-enter-btn {
+      width: 100%; padding: 13px; background: linear-gradient(135deg, #071739, #0D2554);
+      color: white; border: none; border-radius: 12px;
+      font-family: 'Lato', sans-serif; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 12px; transition: opacity 0.15s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(7,23,57,0.25);
+    }
+    .role-enter-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .role-error { color: var(--red); font-size: 13px; font-weight: 600; margin-top: 10px; min-height: 18px; }
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; cursor: default;
+    }
+    .role-badge.admin { background: rgba(166,136,104,0.25); color: var(--gold); }
+    .role-badge.cajero { background: rgba(74,222,128,0.18); color: #4ade80; }
+    .change-role-btn {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+      padding: 5px 9px; border-radius: 8px; font-size: 10px; color: rgba(255,255,255,0.45);
+      font-family: 'Lato', sans-serif; transition: all 0.15s; white-space: nowrap;
+    }
+    .change-role-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); }
+    body.dark .role-card { background: rgba(12,24,48,0.97); border-color: rgba(166,136,104,0.20); }
+    body.dark .role-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+    body.dark .role-btn:hover { border-color: var(--gold); background: rgba(166,136,104,0.10); }
+    body.dark .role-pin-input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white; }
+
     /* ══ BOTTOM NAV ══ */
     .bottom-nav {
       display: none;
@@ -767,6 +830,8 @@
       <div class="cashier-av" id="cashierInitial">?</div>
       <span class="cashier-name" id="cashierName">...</span>
     </div>
+    <span id="roleBadge" class="role-badge admin" style="display:none">Admin</span>
+    <button class="change-role-btn" id="changeRoleBtn" onclick="showRoleOverlay()" style="display:none">⇄ Rol</button>
     <button class="signout-btn" onclick="signOut()" title="Cerrar sesión">⏻ Salir</button>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Modo oscuro">🌙</button>
   </div>
@@ -843,7 +908,9 @@
           <div class="page-title">Cierre de Caja</div>
           <div class="page-subtitle" id="cierreDate">--</div>
         </div>
-        <div style="display:flex;gap:10px" id="cierreActions"></div>
+        <div style="display:flex;gap:10px;align-items:center" id="cierreActions">
+          <button class="btn-secondary" onclick="changeAdminPin()" style="font-size:12px;padding:7px 14px" title="Cambiar PIN de administrador">🔑 Cambiar PIN</button>
+        </div>
       </div>
       <div id="cierreBanner"></div>
       <div class="stats-grid" id="cierreStats"></div>
@@ -1107,6 +1174,38 @@
   </div>
 </div>
 
+<!-- ═══ ROLE OVERLAY ═══ -->
+<div class="role-overlay" id="roleOverlay">
+  <div class="role-card">
+    <div class="auth-logo" style="margin-bottom:20px">
+      <div class="auth-logo-mark">🛒</div>
+      <div class="auth-logo-name">Flow<em>POS</em></div>
+    </div>
+    <div class="role-title">¿Cómo vas a trabajar hoy?</div>
+    <div class="role-subtitle">Elige tu rol para continuar</div>
+    <div class="role-buttons">
+      <button class="role-btn" id="roleBtnCajero" onclick="selectRole('cajero')">
+        <span class="role-btn-icon">🛒</span>
+        <span class="role-btn-label">Cajero</span>
+        <span class="role-btn-desc">Solo ventas</span>
+      </button>
+      <button class="role-btn" id="roleBtnAdmin" onclick="selectRole('admin')">
+        <span class="role-btn-icon">⚙️</span>
+        <span class="role-btn-label">Administrador</span>
+        <span class="role-btn-desc">Acceso completo</span>
+      </button>
+    </div>
+    <div class="role-pin-section" id="rolePinSection">
+      <div class="role-pin-label">PIN de administrador</div>
+      <input type="password" class="role-pin-input" id="rolePinInput" maxlength="6"
+        placeholder="••••" inputmode="numeric"
+        onkeydown="if(event.key==='Enter') confirmRole()">
+      <button class="role-enter-btn" onclick="confirmRole()">Entrar como Administrador</button>
+      <div class="role-error" id="roleError"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1117,6 +1216,8 @@ const SUPABASE_URL  = 'https://uegaxpaejvjjwqnyurpx.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlZ2F4cGFlanZqandxbnl1cnB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3OTA5MTMsImV4cCI6MjA4NzM2NjkxM30.gtht8IbRcjzO97TymeMIOVALVRq6c38u_-JJYrWXSOk';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let currentUser = null;
+let currentRole  = null;
+const PIN_KEY    = 'flowpos_admin_pin';
 
 /* ═══════════════════════════════════════════
    DATA
@@ -2071,7 +2172,80 @@ async function onAuthSuccess(user) {
   document.getElementById('cashierInitial').textContent = name.charAt(0).toUpperCase();
   await loadDataFromSupabase();
   loadTheme();
-  goTo('pos');
+  showRoleOverlay();
+}
+
+/* ── ROLE SELECTION ── */
+function showRoleOverlay() {
+  currentRole = null;
+  document.getElementById('rolePinSection').classList.remove('show');
+  document.getElementById('rolePinInput').value = '';
+  document.getElementById('roleError').textContent = '';
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('roleOverlay').style.display = 'flex';
+}
+
+function selectRole(role) {
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('roleBtn' + role.charAt(0).toUpperCase() + role.slice(1)).classList.add('selected');
+  if (role === 'cajero') {
+    currentRole = 'cajero';
+    document.getElementById('roleOverlay').style.display = 'none';
+    applyRoleRestrictions();
+    goTo('pos');
+  } else {
+    document.getElementById('rolePinSection').classList.add('show');
+    setTimeout(() => document.getElementById('rolePinInput').focus(), 120);
+  }
+}
+
+function confirmRole() {
+  const pin      = document.getElementById('rolePinInput').value;
+  const savedPin = localStorage.getItem(PIN_KEY) || '1234';
+  if (pin === savedPin) {
+    currentRole = 'admin';
+    document.getElementById('roleOverlay').style.display = 'none';
+    document.getElementById('rolePinInput').value = '';
+    applyRoleRestrictions();
+    goTo('pos');
+  } else {
+    document.getElementById('roleError').textContent = 'PIN incorrecto';
+    document.getElementById('rolePinInput').value = '';
+    document.getElementById('rolePinInput').focus();
+    setTimeout(() => document.getElementById('roleError').textContent = '', 2000);
+  }
+}
+
+function applyRoleRestrictions() {
+  const isAdmin = currentRole === 'admin';
+  // Badge
+  const badge = document.getElementById('roleBadge');
+  badge.className = 'role-badge ' + currentRole;
+  badge.textContent = isAdmin ? 'Admin' : 'Cajero';
+  badge.style.display = 'inline-flex';
+  document.getElementById('changeRoleBtn').style.display = 'inline-flex';
+  // Nav tabs
+  ['inventory','cierre','reports'].forEach(view => {
+    document.querySelectorAll(`[data-view="${view}"]`).forEach(el => {
+      el.style.display = isAdmin ? '' : 'none';
+    });
+  });
+  // Gestionar categorías button
+  const catBtn = document.querySelector('.btn-cat-manage');
+  if (catBtn) catBtn.style.display = isAdmin ? '' : 'none';
+  // Redirect if on restricted view
+  if (!isAdmin && ['inventory','cierre','reports'].includes(APP.view)) goTo('pos');
+}
+
+function changeAdminPin() {
+  const current = prompt('PIN actual:');
+  if (current === null) return;
+  const saved = localStorage.getItem(PIN_KEY) || '1234';
+  if (current !== saved) { toast('❌ PIN actual incorrecto'); return; }
+  const newPin = prompt('Nuevo PIN (mínimo 4 dígitos):');
+  if (!newPin || newPin.length < 4) { toast('PIN inválido'); return; }
+  localStorage.setItem(PIN_KEY, newPin);
+  toast('✓ PIN actualizado');
 }
 
 async function loadDataFromSupabase() {
