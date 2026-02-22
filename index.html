@@ -818,11 +818,27 @@
         <table class="inv-table">
           <thead>
             <tr>
-              <th>Producto</th><th>Categoría</th><th>Precio</th><th>Descuento</th><th>Stock</th><th>Acciones</th>
+              <th>Producto</th><th>Categoría</th><th>Costo</th><th>Precio venta</th><th>Stock</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody id="invTableBody"></tbody>
         </table>
+      </div>
+
+      <!-- Configuración -->
+      <div class="section-card" style="margin-top:20px">
+        <div class="section-card-title">⚙️ Configuración</div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">IVA (%)</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="number" id="ivaInput" min="0" max="100" step="0.5"
+                style="width:80px;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'Lato',sans-serif;font-size:15px;font-weight:700;color:var(--dark);background:var(--bg);outline:none"
+                oninput="updateIva(this.value)">
+              <span style="font-size:13px;color:var(--muted)">% aplicado al subtotal</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1223,9 +1239,20 @@ function fmt(n)   { return '$ ' + Math.round(n).toLocaleString('es-CO'); }
 function fp(p)    { return p.discount ? p.price * (1 - p.discount / 100) : p.price; }
 function genOrder(){ return String(Math.floor(Math.random() * 9000) + 1000); }
 function todayStr(){ return new Date().toISOString().split('T')[0]; }
+
+let IVA_RATE = parseFloat(ls.getItem(K+'iva') ?? 19);
+
+function updateIva(val) {
+  const n = parseFloat(val);
+  if (isNaN(n) || n < 0 || n > 100) return;
+  IVA_RATE = n;
+  ls.setItem(K+'iva', n);
+  toast(`✓ IVA actualizado a ${n}%`);
+}
+
 function totals() {
   const sub = APP.cart.reduce((a, i) => a + fp(i) * i.qty, 0);
-  const iva = sub * 0.19;
+  const iva = sub * (IVA_RATE / 100);
   return { sub, iva, total: sub + iva };
 }
 
@@ -1582,6 +1609,8 @@ function newSale() {
    INVENTORY
 ═══════════════════════════════════════════ */
 function renderInventory() {
+  const ivaEl = document.getElementById('ivaInput');
+  if (ivaEl) ivaEl.value = IVA_RATE;
   // Cat filter pills
   const all = [{ id: 'all', label: 'Todos' }, ...CATS];
   document.getElementById('invCatFilters').innerHTML = all.map(c => `
@@ -1608,8 +1637,8 @@ function renderInventory() {
           </div>
         </td>
         <td><span class="cat-tag">${catLabel}</span></td>
+        <td>${p.cost ? `<span style="color:var(--muted)">${fmt(p.cost)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
         <td><strong>${fmt(p.price)}</strong>${p.discount ? `<br><small style="color:var(--red)">Con dcto: ${fmt(fp(p))}</small>` : ''}</td>
-        <td>${p.discount ? `<span style="color:var(--red);font-weight:700">-${p.discount}%</span>` : '<span style="color:var(--muted)">—</span>'}</td>
         <td><span class="stock-badge ${sc}">${sl}</span></td>
         <td>
           <div class="action-btns">
