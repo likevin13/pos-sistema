@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlowPOS · Sistema Completo</title>
+  <title>Magrelema · Sistema POS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -726,7 +726,10 @@
       .header { padding: 0 14px; gap: 10px; }
       .datetime-time, .datetime-date { font-size: 13px; }
       .cashier-name { display: none; }
-      .signout-btn { display: none; }
+      .datetime-block { display: none; }
+      .signout-btn { padding: 6px 8px; font-size: 14px; }
+      .signout-btn .signout-text { display: none; }
+      .change-role-btn { padding: 4px 7px; font-size: 10px; }
 
       /* Show bottom nav */
       .bottom-nav { display: flex; }
@@ -799,7 +802,7 @@
 <header class="header">
   <div class="logo">
     <div class="logo-mark">🛍️</div>
-    <div class="logo-name">Flow<em>POS</em></div>
+    <div class="logo-name">Magre<em>lema</em></div>
   </div>
 
   <nav class="nav-tabs">
@@ -822,7 +825,7 @@
   </nav>
 
   <div class="header-right">
-    <div>
+    <div class="datetime-block">
       <div class="datetime-time" id="clock">--:--</div>
       <div class="datetime-date" id="dateDisplay">--</div>
     </div>
@@ -832,7 +835,7 @@
     </div>
     <span id="roleBadge" class="role-badge admin" style="display:none">Admin</span>
     <button class="change-role-btn" id="changeRoleBtn" onclick="showRoleOverlay()" style="display:none">⇄ Rol</button>
-    <button class="signout-btn" onclick="signOut()" title="Cerrar sesión">⏻ Salir</button>
+    <button class="signout-btn" onclick="signOut()" title="Cerrar sesión">⏻ <span class="signout-text">Salir</span></button>
     <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Modo oscuro">🌙</button>
   </div>
 </header>
@@ -1024,7 +1027,7 @@
 <div class="overlay" id="receiptOverlay">
   <div class="modal">
     <div class="receipt-header">
-      <div class="receipt-brand">FlowPOS</div>
+      <div class="receipt-brand">Magrelema</div>
       <div class="receipt-info">Tienda Principal · NIT: 900.123.456-7<br>Calle 10 #5-40, Yopal, Casanare · Tel: (608) 555-0000</div>
     </div>
     <div id="receiptBody"></div>
@@ -1150,7 +1153,7 @@
   <div class="auth-card">
     <div class="auth-logo">
       <div class="auth-logo-mark">🛒</div>
-      <div class="auth-logo-name">Flow<em>POS</em></div>
+      <div class="auth-logo-name">Magre<em>lema</em></div>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Iniciar sesión</button>
@@ -1179,7 +1182,7 @@
   <div class="role-card">
     <div class="auth-logo" style="margin-bottom:20px">
       <div class="auth-logo-mark">🛒</div>
-      <div class="auth-logo-name">Flow<em>POS</em></div>
+      <div class="auth-logo-name">Magre<em>lema</em></div>
     </div>
     <div class="role-title">¿Cómo vas a trabajar hoy?</div>
     <div class="role-subtitle">Elige tu rol para continuar</div>
