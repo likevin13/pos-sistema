@@ -2201,7 +2201,7 @@ function selectRole(role) {
 
 function confirmRole() {
   const pin      = document.getElementById('rolePinInput').value;
-  const savedPin = localStorage.getItem(PIN_KEY) || '1234';
+  const savedPin = localStorage.getItem(PIN_KEY) || '1213';
   if (pin === savedPin) {
     currentRole = 'admin';
     document.getElementById('roleOverlay').style.display = 'none';
@@ -2240,7 +2240,7 @@ function applyRoleRestrictions() {
 function changeAdminPin() {
   const current = prompt('PIN actual:');
   if (current === null) return;
-  const saved = localStorage.getItem(PIN_KEY) || '1234';
+  const saved = localStorage.getItem(PIN_KEY) || '1213';
   if (current !== saved) { toast('❌ PIN actual incorrecto'); return; }
   const newPin = prompt('Nuevo PIN (mínimo 4 dígitos):');
   if (!newPin || newPin.length < 4) { toast('PIN inválido'); return; }
