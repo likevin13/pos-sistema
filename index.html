@@ -1046,11 +1046,11 @@
     <div class="form-grid" style="margin-bottom:14px">
       <div class="field">
         <label>Emoji / Icono</label>
-        <input type="text" id="pEmoji" placeholder="👕" maxlength="4">
+        <input type="text" id="pEmoji" placeholder="📦" maxlength="4" oninput="emojiManual=true">
       </div>
       <div class="field">
         <label>Nombre del producto *</label>
-        <input type="text" id="pName" placeholder="Ej: Camiseta Básica">
+        <input type="text" id="pName" placeholder="Ej: Camiseta Básica" oninput="suggestEmoji(this.value)">
       </div>
     </div>
     <div class="form-grid" style="margin-bottom:14px">
@@ -1753,8 +1753,118 @@ function renderInventory() {
 
 function setInvCat(id) { APP.invCat = id; renderInventory(); }
 
+/* ── AUTO EMOJI ── */
+let emojiManual = false;
+
+const EMOJI_MAP = [
+  [/camiseta|camisa|polo|blusa|top\b/,            '👕'],
+  [/pantalon|pantalón|jean|jeans/,                 '👖'],
+  [/vestido/,                                      '👗'],
+  [/chaqueta|abrigo|saco|blazer|sueter|suéter/,    '🧥'],
+  [/sudadera|hoodie/,                              '🩱'],
+  [/falda/,                                        '👚'],
+  [/ropa interior|boxer|calzon|calzón/,            '🩲'],
+  [/medias|calcetines/,                            '🧦'],
+  [/corbata/,                                      '👔'],
+  [/pijama/,                                       '😴'],
+  [/zapatillas|tenis\b|deportivo/,                 '👟'],
+  [/botas|bota\b/,                                 '🥾'],
+  [/sandalias|sandalia|chanclas|chancletas/,        '🩴'],
+  [/zapatos|zapato|mocasines|loafer/,              '👞'],
+  [/tacones|talon|taconas/,                        '👠'],
+  [/bolso|cartera|mochila|bolsa|maleta/,           '👜'],
+  [/cinturon|cinturón|correa\b/,                   '🪢'],
+  [/reloj/,                                        '⌚'],
+  [/gafas|lentes|anteojos|sol\b/,                  '🕶️'],
+  [/bufanda|pañuelo/,                              '🧣'],
+  [/sombrero|gorra|gorro|cachucha/,                '🧢'],
+  [/guantes/,                                      '🧤'],
+  [/collar|cadena|dije/,                           '📿'],
+  [/aretes|pendientes|arillo/,                     '💍'],
+  [/pulsera|brazalete/,                            '💎'],
+  [/audifonos|audífonos|auriculares|headphone/,    '🎧'],
+  [/cable|usb|cargador/,                           '🔌'],
+  [/celular|telefono|teléfono|movil|móvil/,        '📱'],
+  [/computador|laptop|portatil|portátil/,          '💻'],
+  [/teclado/,                                      '⌨️'],
+  [/raton|ratón|mouse/,                            '🖱️'],
+  [/pantalla|monitor|television|televisor|tv\b/,   '🖥️'],
+  [/parlante|altavoz|bocina|speaker/,              '🔊'],
+  [/camara|cámara/,                                '📷'],
+  [/bateria|batería|pila/,                         '🔋'],
+  [/nevera|refrigerador|heladera/,                 '🧊'],
+  [/lavadora|secadora/,                            '🫧'],
+  [/microondas/,                                   '📦'],
+  [/licuadora|batidora/,                           '🥤'],
+  [/olla|sarten|sartén|wok|cazuela/,               '🥘'],
+  [/cama|colchon|colchón|almohada/,                '🛏️'],
+  [/sofa|sofá|silla|poltrona/,                     '🪑'],
+  [/mesa|escritorio/,                              '🪵'],
+  [/lampara|lámpara|foco|bombillo/,                '💡'],
+  [/espejo/,                                       '🪞'],
+  [/toalla/,                                       '🛁'],
+  [/sabana|sábana/,                                '🛏️'],
+  [/cortina/,                                      '🪟'],
+  [/planta|flores|maceta|jarron/,                  '🪴'],
+  [/escoba|trapero|limpieza|detergente/,           '🧹'],
+  [/vaso|copa|taza|mug/,                           '☕'],
+  [/plato|vajilla/,                                '🍽️'],
+  [/leche/,                                        '🥛'],
+  [/pan\b|panaderia|pandebono/,                    '🍞'],
+  [/arroz/,                                        '🍚'],
+  [/pollo/,                                        '🍗'],
+  [/carne|res\b|cerdo/,                            '🥩'],
+  [/pescado|atun|atún/,                            '🐟'],
+  [/huevo/,                                        '🥚'],
+  [/aceite/,                                       '🫙'],
+  [/cafe|café\b/,                                  '☕'],
+  [/agua\b/,                                       '💧'],
+  [/jugo|bebida|gaseosa|refresco/,                 '🧃'],
+  [/cerveza/,                                      '🍺'],
+  [/vino/,                                         '🍷'],
+  [/snack|papas\b|chips/,                          '🥔'],
+  [/chocolate|dulce|caramelo|gomita/,              '🍫'],
+  [/torta|pastel|cake|ponque/,                     '🎂'],
+  [/helado/,                                       '🍦'],
+  [/shampoo|champu|champú|cabello|pelo\b/,         '🧴'],
+  [/perfume|colonia|fragancia/,                    '🌸'],
+  [/crema|locion|loción|hidratante/,               '🧴'],
+  [/maquillaje|labial|sombra\b|rubor/,             '💄'],
+  [/jabon|jabón|gel\b/,                            '🧼'],
+  [/cepillo|dental|dientes/,                       '🪥'],
+  [/pelota|balon|balón/,                           '⚽'],
+  [/bicicleta|bici\b/,                             '🚲'],
+  [/pesas|mancuerna|gym|gimnasio/,                 '🏋️'],
+  [/tenis\b.*raqueta|raqueta/,                     '🎾'],
+  [/yoga|mat\b/,                                   '🧘'],
+  [/juguete|muñeca|peluche/,                       '🧸'],
+  [/bebe|bebé|pañal/,                              '👶'],
+  [/cuaderno|libreta|agenda/,                      '📓'],
+  [/lapiz|lápiz|esfero|boligrafo|bolígrafo/,       '✏️'],
+  [/tijeras/,                                      '✂️'],
+  [/libro|revista/,                                '📚'],
+  [/regalo|obsequio/,                              '🎁'],
+  [/flores|ramo\b/,                                '💐'],
+  [/perro|gato|mascota|croquetas/,                 '🐾'],
+  [/martillo|tornillo|herramienta/,                '🔨'],
+  [/pintura|pincel/,                               '🎨'],
+];
+
+function suggestEmoji(name) {
+  if (emojiManual) return;
+  const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  for (const [regex, emoji] of EMOJI_MAP) {
+    if (regex.test(n)) {
+      document.getElementById('pEmoji').value = emoji;
+      return;
+    }
+  }
+  document.getElementById('pEmoji').value = '';
+}
+
 function openProductModal(prefill) {
   const isEdit = !!prefill;
+  emojiManual  = isEdit; // en edición no sobreescribir emoji existente
   document.getElementById('productModalTitle').textContent = isEdit ? 'Editar Producto' : 'Nuevo Producto';
   document.getElementById('productId').value    = isEdit ? prefill.id : '';
   document.getElementById('pEmoji').value       = isEdit ? prefill.emoji : '';
