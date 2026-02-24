@@ -648,6 +648,97 @@
       .pos-right  { max-height: 42vh; border-left: none; border-top: 1px solid var(--border); }
     }
 
+    /* ══ MESA BUBBLE (Rappi style) ══ */
+    .mesa-bubble {
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      width: 580px; max-width: calc(100vw - 36px); z-index: 55; display: none;
+    }
+    .mesa-bubble.visible { display: block; }
+
+    .mb-panel {
+      background: var(--white); border-radius: 22px 22px 0 0; overflow: hidden;
+      max-height: 0; opacity: 0;
+      transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease;
+      box-shadow: 0 -8px 40px rgba(10,25,49,0.13), 0 -2px 8px rgba(10,25,49,0.07);
+    }
+    .mesa-bubble:hover .mb-panel,
+    .mesa-bubble.pinned .mb-panel { max-height: 400px; opacity: 1; }
+
+    .mb-panel-inner { padding: 16px 20px 0; }
+    .mb-panel-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    .mb-panel-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .mb-items-list { max-height: 190px; overflow-y: auto; display: flex; flex-direction: column; }
+    .mb-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      animation: mb-item-in .18s ease;
+    }
+    @keyframes mb-item-in { from { opacity:0; transform:translateX(-5px); } to { opacity:1; transform:none; } }
+    .mb-item-emoji {
+      font-size: 18px; width: 34px; height: 34px; background: var(--bg); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .mb-item-info { flex: 1; min-width: 0; }
+    .mb-item-name { font-size: 12px; font-weight: 700; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mb-item-qty  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .mb-item-price { font-size: 12px; font-weight: 900; color: var(--blue-mid); flex-shrink: 0; }
+    .mb-msg { text-align: center; padding: 18px; color: var(--muted); font-size: 13px; }
+
+    .mb-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px; background: var(--bg);
+      border-top: 1px solid var(--border); gap: 8px;
+    }
+    .mb-total-wrap { display: flex; flex-direction: column; }
+    .mb-total-lbl  { font-size: 10px; color: var(--muted); }
+    .mb-total-val  { font-size: 22px; font-weight: 900; color: var(--navy); letter-spacing: -0.5px; }
+    .mb-btns { display: flex; gap: 8px; }
+
+    /* Bar pill */
+    .mb-bar {
+      background: linear-gradient(135deg, #0A1931 0%, #122B50 60%, #1A3D63 100%);
+      border-radius: 20px; padding: 11px 12px 11px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; position: relative; z-index: 1;
+      box-shadow: 0 8px 40px rgba(10,25,49,0.50), 0 2px 8px rgba(10,25,49,0.3);
+      transition: border-radius 0.32s ease;
+    }
+    .mesa-bubble:hover .mb-bar, .mesa-bubble.pinned .mb-bar { border-radius: 0 0 20px 20px; }
+    .mb-bar-left { display: flex; align-items: center; gap: 11px; }
+    .mb-icon {
+      background: linear-gradient(135deg, var(--amber), #B45309);
+      width: 38px; height: 38px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(217,119,6,0.4);
+    }
+    .mb-bar-info { display: flex; flex-direction: column; }
+    .mb-bar-mesa  { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: white; }
+    .mb-bar-sub   { font-size: 11px; color: rgba(255,255,255,0.42); }
+    .mb-bar-right { display: flex; align-items: center; gap: 10px; }
+    .mb-bar-total { font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+    .mb-arrow { color: rgba(255,255,255,0.32); font-size: 15px; transition: transform 0.3s; }
+    .mesa-bubble:hover .mb-arrow, .mesa-bubble.pinned .mb-arrow { transform: rotate(180deg); }
+
+    .btn-abrir-pos {
+      background: linear-gradient(135deg, var(--amber), #B45309);
+      color: white; border: none; border-radius: 12px;
+      padding: 9px 18px; font-family: 'Lato', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
+      box-shadow: 0 3px 14px rgba(217,119,6,0.45);
+    }
+    .btn-abrir-pos:hover { transform: scale(1.04); box-shadow: 0 5px 20px rgba(217,119,6,0.6); }
+
+    @media (max-width: 640px) {
+      .mesa-bubble { bottom: 74px; left: 8px; right: 8px; width: auto; transform: none; }
+      .mb-bar { border-radius: 14px; padding: 9px 12px; }
+      .mb-bar-mesa { font-size: 14px; }
+      .mb-bar-total { font-size: 17px; }
+    }
+
     /* ══ MOBILE NAV ══ */
     .bottom-nav {
       display: none;
@@ -821,6 +912,46 @@
   </div>
   <div class="items-cats" id="itemsCats"></div>
   <div class="items-grid" id="itemsGrid"></div>
+</div>
+
+<!-- ═══ MESA BUBBLE ═══ -->
+<div class="mesa-bubble" id="mesaBubble"
+  onmouseenter="clearBubbleTimer()"
+  onmouseleave="schedBubbleHide()">
+  <div class="mb-panel">
+    <div class="mb-panel-inner">
+      <div class="mb-panel-header">
+        <span class="mb-panel-title" id="mbPanelTitle">Pedido en curso</span>
+      </div>
+      <div class="mb-items-list" id="mbItemsList">
+        <div class="mb-msg">Cargando...</div>
+      </div>
+    </div>
+    <div class="mb-footer">
+      <div class="mb-total-wrap">
+        <span class="mb-total-lbl">Total</span>
+        <span class="mb-total-val" id="mbTotalVal">$ 0</span>
+      </div>
+      <div class="mb-btns">
+        <button class="btn-secondary" id="mbBtnComanda" onclick="cmdBurbuja()" style="display:none">🖨️ Comanda</button>
+        <button class="btn-abrir-pos" onclick="abrirBurbuja()">Abrir POS →</button>
+      </div>
+    </div>
+  </div>
+  <div class="mb-bar" onclick="pinBurbuja(event)">
+    <div class="mb-bar-left">
+      <div class="mb-icon" id="mbIcon">🪑</div>
+      <div class="mb-bar-info">
+        <span class="mb-bar-mesa" id="mbBarMesa">Mesa</span>
+        <span class="mb-bar-sub"  id="mbBarSub">Libre</span>
+      </div>
+    </div>
+    <div class="mb-bar-right">
+      <span class="mb-bar-total" id="mbBarTotal"></span>
+      <span class="mb-arrow">▾</span>
+      <button class="btn-abrir-pos" onclick="abrirBurbuja()">Abrir →</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ MODAL: COMANDA ═══ -->
@@ -1007,7 +1138,16 @@ function cerrarOverlay(id) { document.getElementById(id)?.classList.remove('open
    NAVEGACIÓN
 ══════════════════════════════════════════ */
 let VIEW_ACTUAL = 'mesas';
-let POS_CAT = 'all';
+let POS_CAT     = 'all';
+
+// Mesa Bubble state
+let BUBBLE_ID      = null;
+let BUBBLE_NUM     = null;
+let BUBBLE_ESTADO  = null;
+let BUBBLE_PED_ID  = null;
+let BUBBLE_TOTAL   = 0;
+let BUBBLE_LOADED  = false;
+let _bubbleTimer   = null;
 
 function goTo(view, btn) {
   if (VIEW_ACTUAL === view) return;
@@ -1064,7 +1204,10 @@ async function cargarMesas() {
     const pedido = pedidosAbiertos[m.id];
     const estado = m.estado === 'ocupada' ? 'ocupada' : 'libre';
     return `
-      <div class="mesa-card ${estado}" onclick="abrirMesa('${m.id}', '${estado}', ${m.numero})">
+      <div class="mesa-card ${estado}"
+        onclick="abrirMesa('${m.id}', '${estado}', ${m.numero})"
+        onmouseenter="hoverMesa('${m.id}', ${m.numero}, '${estado}', '${pedido?.id || ''}', ${pedido?.total || 0})"
+        onmouseleave="schedBubbleHide()">
         <button class="mesa-del" onclick="eliminarMesa(event,'${m.id}','${estado}')">×</button>
         <span class="mesa-num">Mesa ${m.numero}</span>
         <span class="mesa-status">${estado === 'libre' ? '✓ Libre' : '● Ocupada'}</span>
@@ -1106,6 +1249,7 @@ async function abrirMesa(mesaId, estado, numero) {
   renderPosCats();
   renderPosProds();
   renderPosOrder();
+  ocultarBurbuja();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-pos-mesa').classList.add('active');
   VIEW_ACTUAL = 'pos-mesa';
@@ -1173,6 +1317,128 @@ function volverAMesas() {
   document.querySelectorAll('.bnav-btn').forEach((t, i) => t.classList.toggle('active', i === 0));
   cargarMesas();
 }
+
+/* ══════════════════════════════════════════
+   MESA BUBBLE
+══════════════════════════════════════════ */
+function hoverMesa(mesaId, num, estado, pedidoId, total) {
+  clearBubbleTimer();
+  // Si es otra mesa, resetear items cargados
+  if (BUBBLE_ID !== mesaId) { BUBBLE_LOADED = false; }
+
+  BUBBLE_ID     = mesaId;
+  BUBBLE_NUM    = num;
+  BUBBLE_ESTADO = estado;
+  BUBBLE_PED_ID = pedidoId;
+  BUBBLE_TOTAL  = total;
+
+  const bubble = document.getElementById('mesaBubble');
+  document.getElementById('mbBarMesa').textContent = `Mesa ${num}`;
+  document.getElementById('mbIcon').textContent    = estado === 'libre' ? '🪑' : '🍽️';
+
+  if (estado === 'libre') {
+    document.getElementById('mbBarSub').textContent    = 'Libre · toca para abrir';
+    document.getElementById('mbBarTotal').textContent  = '';
+    document.getElementById('mbBtnComanda').style.display = 'none';
+    document.getElementById('mbPanelTitle').textContent   = 'Mesa libre';
+    document.getElementById('mbTotalVal').textContent     = '$ 0';
+    document.getElementById('mbItemsList').innerHTML      =
+      '<div class="mb-msg">Mesa disponible. Toca para iniciar un pedido.</div>';
+  } else {
+    document.getElementById('mbBarSub').textContent   = 'Ocupada · pasa el cursor para ver';
+    document.getElementById('mbBarTotal').textContent = fmt(total);
+    document.getElementById('mbBtnComanda').style.display = '';
+    document.getElementById('mbPanelTitle').textContent   = `Pedido · Mesa ${num}`;
+    document.getElementById('mbTotalVal').textContent     = fmt(total);
+    // Cargar ítems en fondo
+    if (!BUBBLE_LOADED) cargarItemsBurbuja();
+  }
+
+  bubble.classList.add('visible');
+}
+
+function schedBubbleHide() {
+  clearBubbleTimer();
+  _bubbleTimer = setTimeout(() => {
+    const b = document.getElementById('mesaBubble');
+    if (!b.classList.contains('pinned')) b.classList.remove('visible');
+  }, 350);
+}
+
+function clearBubbleTimer() {
+  if (_bubbleTimer) { clearTimeout(_bubbleTimer); _bubbleTimer = null; }
+}
+
+async function cargarItemsBurbuja() {
+  if (!BUBBLE_PED_ID || BUBBLE_ESTADO === 'libre') return;
+  BUBBLE_LOADED = true;
+  document.getElementById('mbItemsList').innerHTML = '<div class="mb-msg">Cargando ítems...</div>';
+
+  const { data: items } = await _sb
+    .from('pedido_items').select('*')
+    .eq('pedido_id', BUBBLE_PED_ID).order('created_at');
+
+  if (!items?.length) {
+    document.getElementById('mbItemsList').innerHTML = '<div class="mb-msg">Sin ítems aún</div>';
+    return;
+  }
+  document.getElementById('mbItemsList').innerHTML = items.map(i => `
+    <div class="mb-item">
+      <div class="mb-item-emoji">${i.emoji || '🍽️'}</div>
+      <div class="mb-item-info">
+        <div class="mb-item-name">${i.nombre}</div>
+        <div class="mb-item-qty">${i.cantidad} × ${fmt(i.precio)}</div>
+      </div>
+      <div class="mb-item-price">${fmt(i.precio * i.cantidad)}</div>
+    </div>`).join('');
+}
+
+function pinBurbuja(e) {
+  if (e.target.closest('.btn-abrir-pos')) return;
+  const b = document.getElementById('mesaBubble');
+  b.classList.toggle('pinned');
+  // Cargar ítems si aún no se han cargado al pinar
+  if (b.classList.contains('pinned') && !BUBBLE_LOADED && BUBBLE_ESTADO === 'ocupada') {
+    cargarItemsBurbuja();
+  }
+}
+
+async function abrirBurbuja() {
+  if (!BUBBLE_ID) return;
+  document.getElementById('mesaBubble').classList.remove('visible', 'pinned');
+  clearBubbleTimer();
+  await abrirMesa(BUBBLE_ID, BUBBLE_ESTADO, BUBBLE_NUM);
+}
+
+function cmdBurbuja() {
+  if (!BUBBLE_PED_ID) return;
+  // Sincronizar estado global para mostrarComanda
+  PEDIDO_ID    = BUBBLE_PED_ID;
+  MESA_ID      = BUBBLE_ID;
+  MESA_NUM     = BUBBLE_NUM;
+  // Leer ítems del DOM de la burbuja (ya están cargados)
+  const items = [];
+  document.querySelectorAll('#mbItemsList .mb-item').forEach(el => {
+    const name  = el.querySelector('.mb-item-name')?.textContent || '';
+    const qtyTxt = el.querySelector('.mb-item-qty')?.textContent || '';
+    const qty   = parseInt(qtyTxt) || 1;
+    items.push({ nombre: name, cantidad: qty, emoji: el.querySelector('.mb-item-emoji')?.textContent || '🍽️' });
+  });
+  PEDIDO_ITEMS = items;
+  mostrarComanda();
+}
+
+// Ocultar burbuja al entrar a la vista POS
+function ocultarBurbuja() {
+  document.getElementById('mesaBubble').classList.remove('visible', 'pinned');
+  clearBubbleTimer();
+}
+
+// Click fuera de la burbuja → despinar
+document.addEventListener('click', e => {
+  const b = document.getElementById('mesaBubble');
+  if (b?.classList.contains('pinned') && !b.contains(e.target)) b.classList.remove('pinned');
+});
 
 function renderPosCats() {
   const cats = [{ id: 'all', nombre: 'Todos', icon: '🏪' }, ...CATEGORIAS];
