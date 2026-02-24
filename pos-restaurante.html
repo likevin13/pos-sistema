@@ -119,6 +119,7 @@
     .main { padding-top: 60px; min-height: 100vh; }
     .view { display: none; padding: 24px; }
     .view.active { display: block; animation: viewIn 0.2s ease; }
+    #view-mesas.active { display: flex; padding: 0; height: calc(100vh - 60px); }
     @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     .view-header {
@@ -167,57 +168,123 @@
     }
     .btn-block { width: 100%; }
 
-    /* ══ MESAS VIEW ══ */
-    .mesas-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 14px;
+    /* ══ MESAS FLOOR PLAN ══ */
+    #view-mesas { padding: 0; display: flex; flex-direction: column; }
+
+    .floor-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: var(--white);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px;
     }
-    .mesa-card {
-      background: var(--white);
-      border: 2px solid var(--border);
-      border-radius: var(--r);
-      padding: 20px 14px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: var(--shadow-sm);
-      position: relative;
+    .floor-legend { display: flex; gap: 16px; align-items: center; }
+    .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--muted); }
+    .legend-dot   { width: 11px; height: 11px; border-radius: 50%; }
+    .legend-dot.libre   { background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.3); }
+    .legend-dot.ocupada { background: var(--amber); box-shadow: 0 0 6px rgba(217,119,6,0.6); }
+    .btn-edit-mode {
+      background: rgba(10,25,49,0.07); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 9px;
+      padding: 7px 14px; font-family: 'Lato', sans-serif;
+      font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-edit-mode.active { background: rgba(217,119,6,0.12); border-color: var(--amber); color: var(--amber); }
+
+    /* Canvas */
+    .mesas-canvas {
+      flex: 1; position: relative; overflow: hidden;
+      background: #1B2235;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .floor-plant {
+      position: absolute; font-size: 34px; pointer-events: none;
+      opacity: 0.75; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
       user-select: none;
     }
-    .mesa-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    .mesa-card.libre  { border-color: var(--green); }
-    .mesa-card.ocupada { border-color: var(--amber); background: var(--amber-dim); }
-    .mesa-num {
+    .floor-empty {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center; color: rgba(255,255,255,0.25); font-size: 14px;
+    }
+
+    /* Individual table */
+    .floor-mesa {
+      position: absolute; display: flex; flex-direction: column;
+      align-items: center; cursor: pointer; user-select: none;
+      transition: filter 0.2s;
+    }
+    .floor-mesa.is-dragging { z-index: 100; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7)); cursor: grabbing; }
+
+    /* Table wrap: 88px box that contains circle + chairs */
+    .mesa-wrap { position: relative; width: 88px; height: 88px; }
+
+    /* Chairs (4 brown dots at N/E/S/W) */
+    .mesa-chair {
+      position: absolute; width: 18px; height: 18px;
+      border-radius: 50%; background: #6B3F2A;
+      border: 1.5px solid rgba(255,255,255,0.08);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .mesa-chair.n { top:  1px; left: 35px; }
+    .mesa-chair.e { top: 35px; right: 1px; }
+    .mesa-chair.s { bottom: 1px; left: 35px; }
+    .mesa-chair.w { top: 35px; left:  1px; }
+
+    /* Main circle */
+    .mesa-circle {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #252B42;
+      border: 2px solid rgba(255,255,255,0.1);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .floor-mesa.libre .mesa-circle {
+      border-color: rgba(255,255,255,0.12);
+    }
+    .floor-mesa.ocupada .mesa-circle {
+      background: rgba(217,119,6,0.18);
+      border-color: var(--amber);
+      box-shadow: 0 0 22px rgba(217,119,6,0.35), 0 4px 18px rgba(0,0,0,0.5);
+    }
+    .floor-mesa:hover:not(.is-dragging) .mesa-circle {
+      transform: translate(-50%,-50%) scale(1.1);
+    }
+
+    .mesa-floor-num {
       font-family: 'Syne', sans-serif;
-      font-size: 22px; font-weight: 800;
-      color: var(--dark); display: block; margin-bottom: 6px;
+      font-size: 14px; font-weight: 800; color: white; line-height: 1;
     }
-    .mesa-status {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-      text-transform: uppercase; display: block; margin-bottom: 8px;
+    .mesa-floor-dot {
+      width: 6px; height: 6px; border-radius: 50%; margin-top: 4px;
     }
-    .mesa-card.libre  .mesa-status { color: var(--green); }
-    .mesa-card.ocupada .mesa-status { color: var(--amber); }
-    .mesa-total {
-      font-size: 15px; font-weight: 700; color: var(--amber);
-      display: block;
+    .floor-mesa.libre   .mesa-floor-dot { background: rgba(255,255,255,0.25); }
+    .floor-mesa.ocupada .mesa-floor-dot { background: var(--amber-mid); box-shadow: 0 0 5px rgba(245,158,11,0.8); }
+
+    .mesa-floor-label {
+      margin-top: 7px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);
+      text-align: center; white-space: nowrap; letter-spacing: 0.3px;
     }
-    .mesa-del {
-      position: absolute; top: 8px; right: 8px;
-      width: 22px; height: 22px;
-      background: rgba(239,68,68,0.1); border: none;
-      border-radius: 50%; cursor: pointer;
-      font-size: 12px; color: var(--red);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.18s;
+    .floor-mesa.ocupada .mesa-floor-label { color: var(--amber-mid); }
+
+    /* Delete btn — only in edit mode */
+    .mesa-floor-del {
+      position: absolute; top: -5px; right: -5px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--red); border: 2px solid #1B2235;
+      color: white; font-size: 11px; line-height: 1;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 10;
+      box-shadow: 0 2px 6px rgba(239,68,68,0.6);
     }
-    .mesa-card:hover .mesa-del { opacity: 1; }
-    .mesa-empty {
-      grid-column: 1/-1;
-      text-align: center; padding: 60px 20px;
-      color: var(--muted); font-size: 15px;
-    }
+    .mesas-canvas.edit-mode .mesa-floor-del { display: flex; }
+    .mesas-canvas.edit-mode .floor-mesa { cursor: grab; }
+    .mesas-canvas.edit-mode .floor-mesa.is-dragging { cursor: grabbing; }
 
     /* ══ DOMICILIOS VIEW ══ */
     .domicilio-list { display: flex; flex-direction: column; gap: 12px; }
@@ -766,7 +833,7 @@
       .bottom-nav { display: flex; }
       .main { padding-bottom: 72px; }
       .view { padding: 16px; }
-      .mesas-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      #view-mesas { padding: 0; }
     }
     .bnav-btn {
       flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -808,12 +875,26 @@
 
   <!-- MESAS -->
   <section id="view-mesas" class="view active">
-    <div class="view-header">
-      <h2>Mesas</h2>
-      <button class="btn-primary" onclick="crearMesa()">＋ Nueva mesa</button>
+    <!-- Toolbar -->
+    <div class="floor-toolbar">
+      <div class="floor-legend">
+        <div class="legend-item"><div class="legend-dot libre"></div> Libre</div>
+        <div class="legend-item"><div class="legend-dot ocupada"></div> Ocupada</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-edit-mode" id="btnEditMode" onclick="toggleEditMode()">✏️ Mover</button>
+        <button class="btn-primary" onclick="crearMesa()">＋ Mesa</button>
+      </div>
     </div>
-    <div class="mesas-grid" id="mesasGrid">
-      <div class="mesa-empty">Cargando mesas...</div>
+    <!-- Floor canvas -->
+    <div class="mesas-canvas" id="mesasCanvas">
+      <!-- Plantas decorativas -->
+      <div class="floor-plant" style="top:2%;left:1.5%">🪴</div>
+      <div class="floor-plant" style="top:2%;right:1.5%">🌿</div>
+      <div class="floor-plant" style="bottom:5%;left:1.5%">🌱</div>
+      <div class="floor-plant" style="bottom:5%;right:1.5%">🪴</div>
+      <!-- Mesas renderizadas por JS aquí -->
+      <div id="mesasGrid"></div>
     </div>
   </section>
 
@@ -1196,19 +1277,41 @@ async function salir() {
 /* ══════════════════════════════════════════
    MESAS
 ══════════════════════════════════════════ */
-async function cargarMesas() {
-  const grid = document.getElementById('mesasGrid');
+/* Posiciones default por índice */
+const FLOOR_COLS = 5;
+function defaultPos(idx) {
+  const col = idx % FLOOR_COLS;
+  const row = Math.floor(idx / FLOOR_COLS);
+  // Distribuir en % del canvas con margen
+  const x = 8 + col * 18;
+  const y = 10 + row * 28;
+  return { x, y };
+}
 
-  // Cargar mesas y pedidos abiertos en paralelo
+function getMesaPos(mesaId, idx) {
+  const key = `fp_${USER_ID}_${mesaId}`;
+  const stored = localStorage.getItem(key);
+  if (stored) return JSON.parse(stored);
+  return defaultPos(idx);
+}
+
+function saveMesaPos(mesaId, x, y) {
+  localStorage.setItem(`fp_${USER_ID}_${mesaId}`, JSON.stringify({ x, y }));
+}
+
+async function cargarMesas() {
+  const canvas = document.getElementById('mesasCanvas');
+  const grid   = document.getElementById('mesasGrid');
+
   const [{ data: mesas, error }, { data: pedidos }] = await Promise.all([
     _sb.from('mesas').select('*').eq('user_id', USER_ID).order('numero'),
     _sb.from('pedidos').select('id, mesa_id, total').eq('user_id', USER_ID).eq('estado', 'abierto')
   ]);
 
   if (error || !mesas?.length) {
-    grid.innerHTML = `<div class="mesa-empty">
-      <span style="font-size:40px;display:block;margin-bottom:12px;opacity:.4">🪑</span>
-      No hay mesas. Crea la primera con el botón de arriba.
+    grid.innerHTML = `<div class="floor-empty">
+      <div style="font-size:48px;margin-bottom:12px">🪑</div>
+      No hay mesas. Crea la primera.
     </div>`;
     return;
   }
@@ -1216,20 +1319,110 @@ async function cargarMesas() {
   const pedidosAbiertos = {};
   if (pedidos) pedidos.forEach(p => { pedidosAbiertos[p.mesa_id] = p; });
 
-  grid.innerHTML = mesas.map(m => {
+  grid.innerHTML = '';
+  mesas.forEach((m, idx) => {
     const pedido = pedidosAbiertos[m.id];
     const estado = m.estado === 'ocupada' ? 'ocupada' : 'libre';
-    return `
-      <div class="mesa-card ${estado}"
-        onclick="abrirMesa('${m.id}', '${estado}', ${m.numero})"
-        onmouseenter="hoverMesa('${m.id}', ${m.numero}, '${estado}', '${pedido?.id || ''}', ${pedido?.total || 0})"
-        onmouseleave="schedBubbleHide()">
-        <button class="mesa-del" onclick="eliminarMesa(event,'${m.id}','${estado}')">×</button>
-        <span class="mesa-num">Mesa ${m.numero}</span>
-        <span class="mesa-status">${estado === 'libre' ? '✓ Libre' : '● Ocupada'}</span>
-        ${pedido ? `<span class="mesa-total">${fmt(pedido.total || 0)}</span>` : ''}
-      </div>`;
-  }).join('');
+    const pos    = getMesaPos(m.id, idx);
+    const total  = pedido?.total || 0;
+
+    const el = document.createElement('div');
+    el.className  = `floor-mesa ${estado}`;
+    el.id         = `fm-${m.id}`;
+    el.style.left = pos.x + '%';
+    el.style.top  = pos.y + '%';
+    el.dataset.mesaId   = m.id;
+    el.dataset.estado   = estado;
+    el.dataset.numero   = m.numero;
+    el.dataset.pedidoId = pedido?.id || '';
+    el.dataset.total    = total;
+
+    el.innerHTML = `
+      <div class="mesa-wrap">
+        <div class="mesa-chair n"></div>
+        <div class="mesa-chair e"></div>
+        <div class="mesa-chair s"></div>
+        <div class="mesa-chair w"></div>
+        <div class="mesa-circle">
+          <span class="mesa-floor-num">${m.numero}</span>
+          <span class="mesa-floor-dot"></span>
+        </div>
+        <button class="mesa-floor-del" onclick="eliminarMesa(event,'${m.id}','${estado}')">×</button>
+      </div>
+      <div class="mesa-floor-label">${estado === 'libre' ? 'Libre' : fmt(total)}</div>`;
+
+    // Hover → burbuja
+    el.addEventListener('mouseenter', () =>
+      hoverMesa(m.id, m.numero, estado, pedido?.id || '', total));
+    el.addEventListener('mouseleave', schedBubbleHide);
+
+    // Click → abrir POS (solo sin arrastre)
+    el.addEventListener('click', () => {
+      if (el.classList.contains('did-drag')) { el.classList.remove('did-drag'); return; }
+      abrirMesa(m.id, estado, m.numero);
+    });
+
+    initMesaDrag(el, m.id);
+    grid.appendChild(el);
+  });
+}
+
+/* ── Edit mode ── */
+let EDIT_MODE = false;
+function toggleEditMode() {
+  EDIT_MODE = !EDIT_MODE;
+  document.getElementById('mesasCanvas').classList.toggle('edit-mode', EDIT_MODE);
+  const btn = document.getElementById('btnEditMode');
+  btn.classList.toggle('active', EDIT_MODE);
+  btn.textContent = EDIT_MODE ? '✓ Listo' : '✏️ Mover';
+}
+
+/* ── Drag & drop ── */
+function initMesaDrag(el, mesaId) {
+  let startX, startY, startLeft, startTop, dragging = false;
+
+  function onDown(e) {
+    if (!EDIT_MODE) return;
+    e.preventDefault();
+    dragging = true;
+    el.classList.add('is-dragging');
+    const canvas  = document.getElementById('mesasCanvas');
+    const rect    = canvas.getBoundingClientRect();
+    const client  = e.touches ? e.touches[0] : e;
+    startX    = client.clientX;
+    startY    = client.clientY;
+    startLeft = (parseFloat(el.style.left) / 100) * rect.width;
+    startTop  = (parseFloat(el.style.top)  / 100) * rect.height;
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const canvas = document.getElementById('mesasCanvas');
+    const rect   = canvas.getBoundingClientRect();
+    const client = e.touches ? e.touches[0] : e;
+    const dx = client.clientX - startX;
+    const dy = client.clientY - startY;
+    const newLeft = Math.max(0, Math.min(startLeft + dx, rect.width  - 90));
+    const newTop  = Math.max(0, Math.min(startTop  + dy, rect.height - 100));
+    el.style.left = (newLeft / rect.width  * 100) + '%';
+    el.style.top  = (newTop  / rect.height * 100) + '%';
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) el.classList.add('did-drag');
+  }
+
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('is-dragging');
+    saveMesaPos(mesaId, parseFloat(el.style.left), parseFloat(el.style.top));
+  }
+
+  el.addEventListener('mousedown',  onDown);
+  el.addEventListener('touchstart', onDown, { passive: false });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('mouseup',  onUp);
+  document.addEventListener('touchend', onUp);
 }
 
 async function crearMesa() {
