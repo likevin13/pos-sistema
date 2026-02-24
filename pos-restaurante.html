@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowPOS · Restaurante</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #E4EEF6;
+      --surface:    #EEF5FB;
+      --white:      #F6FAFD;
+      --blue:       #4A7FA7;
+      --blue-mid:   #1A3D63;
+      --blue-light: #B3CFE5;
+      --blue-xl:    #DCF0FA;
+      --navy:       #0A1931;
+      --dark:       #0A1931;
+      --mid:        #1A3D63;
+      --muted:      #6B9AB8;
+      --border:     #B3CFE5;
+      --amber:      #D97706;
+      --amber-dim:  #FFF7ED;
+      --amber-mid:  #F59E0B;
+      --green:      #10B981;
+      --green-dim:  #ECFDF5;
+      --red:        #EF4444;
+      --red-dim:    #FEF2F2;
+      --orange:     #F59E0B;
+      --orange-dim: #FFFBEB;
+      --shadow-sm:  0 1px 4px rgba(10,25,49,0.07), 0 2px 10px rgba(10,25,49,0.05);
+      --shadow-md:  0 4px 16px rgba(10,25,49,0.10), 0 1px 4px rgba(10,25,49,0.06);
+      --shadow-lg:  0 20px 60px rgba(10,25,49,0.18), 0 4px 16px rgba(10,25,49,0.09);
+      --r:          16px;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ══ HEADER ══ */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+      height: 60px;
+      background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%);
+      display: flex; align-items: center;
+      padding: 0 20px; gap: 16px;
+      box-shadow: 0 2px 20px rgba(10,25,49,0.45);
+    }
+    .logo { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+    .logo-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--amber), #B45309);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      box-shadow: 0 3px 12px rgba(217,119,6,0.4);
+    }
+    .logo-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 800; color: white; letter-spacing: 0.2px;
+    }
+    .logo-name em { font-style: normal; color: var(--amber); }
+    .logo-badge {
+      background: rgba(217,119,6,0.2);
+      border: 1px solid rgba(217,119,6,0.35);
+      color: #FCD34D;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-tabs { display: flex; gap: 4px; flex: 1; }
+    .nav-tab {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 16px; border-radius: 10px;
+      background: transparent; border: none;
+      font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 600;
+      color: rgba(255,255,255,0.55); cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+    .nav-tab.active { background: rgba(217,119,6,0.18); color: #FCD34D; box-shadow: inset 0 0 0 1px rgba(217,119,6,0.3); }
+
+    .header-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .user-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 5px 12px 5px 6px;
+    }
+    .user-avatar {
+      width: 24px; height: 24px;
+      background: var(--amber);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: white;
+    }
+    .user-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+    .btn-logout {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #FCA5A5; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+      font-family: 'Lato', sans-serif;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,0.25); }
+
+    /* ══ MAIN ══ */
+    .main { padding-top: 60px; min-height: 100vh; }
+    .view { display: none; padding: 24px; }
+    .view.active { display: block; animation: viewIn 0.2s ease; }
+    @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .view-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .view-header h2 { font-size: 22px; font-weight: 900; color: var(--dark); }
+
+    /* ══ BUTTONS ══ */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue-mid), var(--blue));
+      color: white; border: none; border-radius: 10px;
+      padding: 10px 20px; font-family: 'Lato', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-secondary {
+      background: var(--white); color: var(--dark);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 18px; font-family: 'Lato', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-secondary:hover { background: var(--surface); }
+    .btn-amber {
+      background: linear-gradient(135deg, #B45309, var(--amber));
+      color: white; border: none; border-radius: 10px;
+      padding: 10px 20px; font-family: 'Lato', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; box-shadow: 0 4px 14px rgba(217,119,6,0.3);
+    }
+    .btn-amber:hover { transform: translateY(-1px); }
+    .btn-green {
+      background: linear-gradient(135deg, #059669, var(--green));
+      color: white; border: none; border-radius: 10px;
+      padding: 10px 20px; font-family: 'Lato', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-green:hover { transform: translateY(-1px); }
+    .btn-danger {
+      background: var(--red); color: white; border: none; border-radius: 10px;
+      padding: 10px 18px; font-family: 'Lato', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-block { width: 100%; }
+
+    /* ══ MESAS VIEW ══ */
+    .mesas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .mesa-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      user-select: none;
+    }
+    .mesa-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .mesa-card.libre  { border-color: var(--green); }
+    .mesa-card.ocupada { border-color: var(--amber); background: var(--amber-dim); }
+    .mesa-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 800;
+      color: var(--dark); display: block; margin-bottom: 6px;
+    }
+    .mesa-status {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; display: block; margin-bottom: 8px;
+    }
+    .mesa-card.libre  .mesa-status { color: var(--green); }
+    .mesa-card.ocupada .mesa-status { color: var(--amber); }
+    .mesa-total {
+      font-size: 15px; font-weight: 700; color: var(--amber);
+      display: block;
+    }
+    .mesa-del {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px;
+      background: rgba(239,68,68,0.1); border: none;
+      border-radius: 50%; cursor: pointer;
+      font-size: 12px; color: var(--red);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.18s;
+    }
+    .mesa-card:hover .mesa-del { opacity: 1; }
+    .mesa-empty {
+      grid-column: 1/-1;
+      text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 15px;
+    }
+
+    /* ══ DOMICILIOS VIEW ══ */
+    .domicilio-list { display: flex; flex-direction: column; gap: 12px; }
+    .domicilio-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .dom-icon {
+      width: 42px; height: 42px;
+      background: var(--amber-dim);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .dom-info { flex: 1; min-width: 0; }
+    .dom-nombre { font-size: 15px; font-weight: 700; color: var(--dark); }
+    .dom-dir { font-size: 13px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dom-total { font-size: 14px; font-weight: 700; color: var(--blue); margin-top: 3px; }
+    .dom-status-sel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px;
+      font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+      color: var(--dark); cursor: pointer; outline: none;
+    }
+
+    /* ══ MENÚ (INVENTARIO) ══ */
+    .inv-toolbar {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .inv-search {
+      flex: 1; min-width: 200px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      font-family: 'Lato', sans-serif; font-size: 14px;
+      color: var(--dark); outline: none;
+    }
+    .inv-search:focus { border-color: var(--blue); }
+    .prod-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .prod-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px;
+      box-shadow: var(--shadow-sm); cursor: pointer;
+      transition: all 0.18s;
+    }
+    .prod-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .prod-emoji { font-size: 28px; display: block; margin-bottom: 8px; }
+    .prod-nombre { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .prod-precio { font-size: 16px; font-weight: 900; color: var(--blue-mid); }
+    .prod-stock  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .prod-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .prod-btn {
+      flex: 1; padding: 6px; border-radius: 7px;
+      font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .prod-btn-edit { background: var(--blue-xl); color: var(--blue-mid); }
+    .prod-btn-del  { background: var(--red-dim); color: var(--red); }
+
+    /* ══ REPORTES ══ */
+    .report-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+    .report-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .report-card .rc-label { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .report-card .rc-value { font-size: 24px; font-weight: 900; color: var(--dark); }
+    .report-card .rc-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ══ OVERLAYS / MODALS ══ */
+    .overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(10,25,49,0.55);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--white);
+      border-radius: 20px;
+      width: 100%; max-width: 480px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+    }
+    .overlay.open .modal-box { transform: translateY(0) scale(1); }
+    .modal-box.wide { max-width: 640px; }
+
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .modal-head h3 { font-size: 18px; font-weight: 900; color: var(--dark); }
+    .modal-close {
+      width: 32px; height: 32px;
+      background: var(--surface); border: none; border-radius: 8px;
+      cursor: pointer; font-size: 16px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--red-dim); color: var(--red); }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+
+    /* ══ PEDIDO MODAL ══ */
+    .pedido-items { display: flex; flex-direction: column; gap: 8px; min-height: 80px; margin-bottom: 16px; }
+    .pedido-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border-radius: 10px; padding: 10px 14px;
+    }
+    .pi-emoji { font-size: 20px; }
+    .pi-info { flex: 1; }
+    .pi-nombre { font-size: 14px; font-weight: 700; color: var(--dark); }
+    .pi-qty { font-size: 12px; color: var(--muted); }
+    .pi-precio { font-size: 14px; font-weight: 700; color: var(--blue-mid); }
+    .pedido-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px; background: var(--blue-xl);
+      border-radius: 12px; margin-bottom: 16px;
+    }
+    .pedido-total-label { font-size: 14px; font-weight: 700; color: var(--mid); }
+    .pedido-total-val   { font-size: 20px; font-weight: 900; color: var(--navy); }
+    .pedido-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pedido-empty { text-align: center; padding: 30px; color: var(--muted); font-size: 14px; }
+
+    /* ══ SELECTOR DE ITEMS ══ */
+    .items-overlay {
+      position: fixed; inset: 0; z-index: 110;
+      background: var(--bg);
+      display: none; flex-direction: column;
+    }
+    .items-overlay.open { display: flex; }
+    .items-header {
+      background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%);
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: 0 2px 12px rgba(10,25,49,0.4);
+    }
+    .items-header h3 { font-size: 16px; font-weight: 700; color: white; flex: 1; }
+    .items-close {
+      background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+      color: white; padding: 7px 14px; cursor: pointer;
+      font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+    }
+    .items-search-wrap { padding: 14px 20px 0; }
+    .items-search {
+      width: 100%; background: var(--white); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      font-family: 'Lato', sans-serif; font-size: 14px; outline: none;
+    }
+    .items-cats { display: flex; gap: 8px; padding: 12px 20px; overflow-x: auto; }
+    .items-cat {
+      padding: 6px 14px; border-radius: 20px;
+      background: var(--white); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: all 0.15s;
+    }
+    .items-cat.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .items-grid {
+      flex: 1; overflow-y: auto;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px; padding: 10px 20px 20px;
+    }
+    .item-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 10px;
+      text-align: center; cursor: pointer;
+      transition: all 0.18s; box-shadow: var(--shadow-sm);
+    }
+    .item-card:hover { border-color: var(--amber); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .item-card:active { transform: scale(0.96); }
+    .item-emoji { font-size: 26px; display: block; margin-bottom: 6px; }
+    .item-name  { font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 3px; }
+    .item-price { font-size: 13px; font-weight: 900; color: var(--amber); }
+
+    /* ══ COMANDA ══ */
+    .comanda-ticket {
+      font-family: 'Courier New', monospace;
+      background: white;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .comanda-ticket h4 {
+      text-align: center; font-size: 18px; font-weight: bold;
+      margin-bottom: 4px; border-bottom: 1px dashed #999; padding-bottom: 8px;
+    }
+    .comanda-meta { text-align: center; font-size: 12px; color: #666; margin-bottom: 12px; }
+    .comanda-ul { list-style: none; padding: 0; }
+    .comanda-ul li {
+      display: flex; justify-content: space-between;
+      padding: 5px 0; border-bottom: 1px dotted #eee;
+      font-size: 14px;
+    }
+    .comanda-ul li:last-child { border-bottom: none; }
+
+    /* ══ COBRO ══ */
+    .cobro-total-box {
+      background: var(--blue-xl); border-radius: 12px; padding: 16px;
+      text-align: center; margin-bottom: 18px;
+    }
+    .cobro-total-label { font-size: 13px; color: var(--muted); font-weight: 700; }
+    .cobro-total-val   { font-size: 28px; font-weight: 900; color: var(--navy); margin-top: 4px; }
+    .cobro-opts { display: flex; gap: 10px; margin-bottom: 18px; }
+    .cobro-opt {
+      flex: 1; padding: 12px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--white);
+      cursor: pointer; text-align: center;
+      font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--dark); transition: all 0.18s;
+    }
+    .cobro-opt.active { border-color: var(--blue); background: var(--blue-xl); color: var(--blue-mid); }
+    .cobro-opt .co-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .divisiones-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .division-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border-radius: 10px; padding: 10px 14px;
+    }
+    .division-label { font-size: 13px; font-weight: 700; color: var(--mid); flex-shrink: 0; min-width: 80px; }
+    .division-input {
+      flex: 1; background: var(--white); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px;
+      font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700;
+      color: var(--dark); outline: none;
+    }
+    .division-input:focus { border-color: var(--blue); }
+    .cobro-faltante {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 14px; border-radius: 10px;
+      background: var(--surface); margin-bottom: 4px;
+      font-size: 14px; font-weight: 700; color: var(--mid);
+    }
+
+    /* ══ FORM FIELDS ══ */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 7px;
+    }
+    .form-input {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 11px 14px; font-family: 'Lato', sans-serif;
+      font-size: 14px; color: var(--dark); outline: none;
+      transition: border-color 0.18s;
+    }
+    .form-input:focus { border-color: var(--blue); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { cursor: pointer; }
+
+    /* ══ TOAST ══ */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--navy); color: white;
+      padding: 12px 22px; border-radius: 12px;
+      font-size: 14px; font-weight: 700;
+      box-shadow: var(--shadow-md);
+      opacity: 0; pointer-events: none;
+      transition: all 0.25s; z-index: 999; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ══ EMPTY STATE ══ */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 15px;
+    }
+    .empty-state .es-icon { font-size: 40px; display: block; margin-bottom: 12px; opacity: 0.5; }
+
+    /* ══ LOADING ══ */
+    .loading-spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══ MOBILE NAV ══ */
+    .bottom-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%);
+      padding: 8px 10px 12px;
+      gap: 4px; z-index: 60;
+      box-shadow: 0 -2px 20px rgba(10,25,49,0.4);
+    }
+    @media (max-width: 640px) {
+      .nav-tabs { display: none; }
+      .bottom-nav { display: flex; }
+      .main { padding-bottom: 72px; }
+      .view { padding: 16px; }
+      .mesas-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    }
+    .bnav-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      background: transparent; border: none; cursor: pointer;
+      padding: 6px 4px; border-radius: 10px; transition: all 0.18s;
+    }
+    .bnav-btn.active { background: rgba(217,119,6,0.2); }
+    .bnav-btn span:first-child { font-size: 20px; }
+    .bnav-btn span:last-child { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.55); }
+    .bnav-btn.active span:last-child { color: #FCD34D; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">🍽️</div>
+    <span class="logo-name">Flow<em>POS</em></span>
+    <span class="logo-badge">RESTAURANTE</span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('mesas', this)">🪑 Mesas</button>
+    <button class="nav-tab" onclick="goTo('domicilios', this)">🛵 Domicilios</button>
+    <button class="nav-tab" onclick="goTo('menu', this)">🍱 Menú</button>
+    <button class="nav-tab" onclick="goTo('reportes', this)">📊 Reportes</button>
+  </nav>
+  <div class="header-right">
+    <div class="user-pill">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span class="user-name" id="userName">...</span>
+    </div>
+    <button class="btn-logout" onclick="salir()">Salir</button>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+  <!-- MESAS -->
+  <section id="view-mesas" class="view active">
+    <div class="view-header">
+      <h2>Mesas</h2>
+      <button class="btn-primary" onclick="crearMesa()">＋ Nueva mesa</button>
+    </div>
+    <div class="mesas-grid" id="mesasGrid">
+      <div class="mesa-empty">Cargando mesas...</div>
+    </div>
+  </section>
+
+  <!-- DOMICILIOS -->
+  <section id="view-domicilios" class="view">
+    <div class="view-header">
+      <h2>Domicilios</h2>
+      <button class="btn-amber" onclick="abrirFormDomicilio()">＋ Nuevo domicilio</button>
+    </div>
+    <div class="domicilio-list" id="domiciliosList">
+      <div class="empty-state"><span class="es-icon">🛵</span>No hay domicilios hoy</div>
+    </div>
+  </section>
+
+  <!-- MENÚ -->
+  <section id="view-menu" class="view">
+    <div class="view-header">
+      <h2>Menú</h2>
+      <button class="btn-primary" onclick="abrirFormProducto()">＋ Nuevo producto</button>
+    </div>
+    <div class="inv-toolbar">
+      <input class="inv-search" id="menuSearch" placeholder="Buscar producto..." oninput="renderMenu()">
+    </div>
+    <div class="prod-grid" id="menuGrid">
+      <div class="empty-state"><span class="es-icon">🍱</span>No hay productos aún</div>
+    </div>
+  </section>
+
+  <!-- REPORTES -->
+  <section id="view-reportes" class="view">
+    <div class="view-header"><h2>Reportes</h2></div>
+    <div class="report-cards">
+      <div class="report-card">
+        <div class="rc-label">Ventas hoy</div>
+        <div class="rc-value" id="rVentasHoy">$ 0</div>
+        <div class="rc-sub" id="rCantHoy">0 pedidos</div>
+      </div>
+      <div class="report-card">
+        <div class="rc-label">Ventas semana</div>
+        <div class="rc-value" id="rVentasSemana">$ 0</div>
+        <div class="rc-sub" id="rCantSemana">0 pedidos</div>
+      </div>
+      <div class="report-card">
+        <div class="rc-label">Domicilios hoy</div>
+        <div class="rc-value" id="rDomHoy">0</div>
+        <div class="rc-sub">pendientes + entregados</div>
+      </div>
+      <div class="report-card">
+        <div class="rc-label">Mesas activas</div>
+        <div class="rc-value" id="rMesasActivas">0</div>
+        <div class="rc-sub">ocupadas ahora</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ BOTTOM NAV (mobile) ═══ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-btn active" onclick="goTo('mesas', this)"><span>🪑</span><span>Mesas</span></button>
+  <button class="bnav-btn" onclick="goTo('domicilios', this)"><span>🛵</span><span>Domicilios</span></button>
+  <button class="bnav-btn" onclick="goTo('menu', this)"><span>🍱</span><span>Menú</span></button>
+  <button class="bnav-btn" onclick="goTo('reportes', this)"><span>📊</span><span>Reportes</span></button>
+</nav>
+
+<!-- ═══ MODAL: PEDIDO ACTIVO ═══ -->
+<div class="overlay" id="pedidoOverlay" onclick="closePedidoOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="pedidoTitle">Mesa 1</h3>
+      <button class="modal-close" onclick="cerrarPedido()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pedido-items" id="pedidoItems">
+        <div class="pedido-empty">Sin ítems aún. Agrega productos.</div>
+      </div>
+      <div class="pedido-total-row">
+        <span class="pedido-total-label">Total acumulado</span>
+        <span class="pedido-total-val" id="pedidoTotalVal">$ 0</span>
+      </div>
+      <div class="pedido-actions">
+        <button class="btn-secondary" onclick="abrirSelectorItems()">＋ Agregar ítems</button>
+        <button class="btn-secondary" onclick="mostrarComanda()">🖨️ Comanda</button>
+        <button class="btn-amber" onclick="abrirCobro()">💳 Cobrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OVERLAY: SELECTOR DE ITEMS ═══ -->
+<div class="items-overlay" id="itemsOverlay">
+  <div class="items-header">
+    <h3 id="itemsTitle">Agregar ítems</h3>
+    <button class="items-close" onclick="cerrarSelectorItems()">✕ Listo</button>
+  </div>
+  <div class="items-search-wrap">
+    <input class="items-search" id="itemsSearch" placeholder="Buscar..." oninput="renderItemsGrid()">
+  </div>
+  <div class="items-cats" id="itemsCats"></div>
+  <div class="items-grid" id="itemsGrid"></div>
+</div>
+
+<!-- ═══ MODAL: COMANDA ═══ -->
+<div class="overlay" id="comandaOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Comanda</h3>
+      <button class="modal-close" onclick="cerrarOverlay('comandaOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="comanda-ticket" id="comandaTicket"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarOverlay('comandaOverlay')">Listo</button>
+      <button class="btn-primary" onclick="imprimirComanda()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: COBRO ═══ -->
+<div class="overlay" id="cobroOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="cobroTitle">Cobrar mesa</h3>
+      <button class="modal-close" onclick="cerrarOverlay('cobroOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cobro-total-box">
+        <div class="cobro-total-label">Total a cobrar</div>
+        <div class="cobro-total-val" id="cobroTotalVal">$ 0</div>
+      </div>
+      <div class="cobro-opts">
+        <div class="cobro-opt active" id="optCompleto" onclick="setCobroMode('completo')">
+          <span class="co-icon">💳</span>Pago completo
+        </div>
+        <div class="cobro-opt" id="optDividir" onclick="setCobroMode('dividir')">
+          <span class="co-icon">👥</span>Dividir cuenta
+        </div>
+      </div>
+      <div id="cobro-panel-dividir" style="display:none">
+        <div class="divisiones-list" id="divisionesList"></div>
+        <button class="btn-secondary btn-block" onclick="agregarDivision()" style="margin-bottom:12px">
+          ＋ Agregar persona
+        </button>
+        <div class="cobro-faltante">
+          <span>Faltante</span>
+          <span id="cobroFaltante" style="color:var(--red)">$ 0</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarOverlay('cobroOverlay')">Cancelar</button>
+      <button class="btn-green" id="btnConfirmarCobro" onclick="confirmarCobro()">✓ Confirmar pago</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: NUEVO DOMICILIO ═══ -->
+<div class="overlay" id="domicilioOverlay" onclick="closeDomOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Nuevo domicilio</h3>
+      <button class="modal-close" onclick="cerrarOverlay('domicilioOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre del cliente</label>
+        <input id="domNombre" type="text" class="form-input" placeholder="Nombre completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input id="domDir" type="text" class="form-input" placeholder="Calle, barrio...">
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+        <span style="font-size:13px;font-weight:700;color:var(--mid)">Ítems del pedido</span>
+        <button class="btn-secondary" onclick="abrirSelectorItemsDom()" style="padding:6px 12px;font-size:12px">＋ Agregar</button>
+      </div>
+      <div id="domItemsList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
+      <div class="pedido-total-row">
+        <span class="pedido-total-label">Total</span>
+        <span class="pedido-total-val" id="domTotalVal">$ 0</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarOverlay('domicilioOverlay')">Cancelar</button>
+      <button class="btn-amber" onclick="crearDomicilio()">Crear pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: PRODUCTO ═══ -->
+<div class="overlay" id="productoOverlay" onclick="closeProdOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="prodModalTitle">Nuevo producto</h3>
+      <button class="modal-close" onclick="cerrarOverlay('productoOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Emoji</label>
+        <input id="prodEmoji" type="text" class="form-input" placeholder="🍕" maxlength="4">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input id="prodNombre" type="text" class="form-input" placeholder="Nombre del plato">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Precio</label>
+        <input id="prodPrecio" type="number" class="form-input" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoría</label>
+        <select id="prodCat" class="form-input">
+          <option value="general">General</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarOverlay('productoOverlay')">Cancelar</button>
+      <button class="btn-primary" onclick="guardarProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════ */
+const SB_URL  = 'https://uegaxpaejvjjwqnyurpx.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlZ2F4cGFlanZqandxbnl1cnB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3OTA5MTMsImV4cCI6MjA4NzM2NjkxM30.gtht8IbRcjzO97TymeMIOVALVRq6c38u_-JJYrWXSOk';
+const _sb     = supabase.createClient(SB_URL, SB_ANON);
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let USER_ID      = null;
+let USER_NAME    = '';
+let PRODUCTOS    = [];
+let CATEGORIAS   = [];
+
+// Mesa / pedido activo
+let MESA_ID      = null;
+let MESA_NUM     = null;
+let PEDIDO_ID    = null;
+let PEDIDO_ITEMS = [];
+let PEDIDO_TOTAL = 0;
+
+// Domicilio en construcción
+let DOM_ITEMS    = [];
+let DOM_TOTAL    = 0;
+
+// Cobro
+let COBRO_MODE   = 'completo';
+let DIVISIONES   = [];
+
+// Contexto de items selector
+let ITEMS_CONTEXT = null; // 'mesa' o 'dom'
+let ITEMS_CAT     = 'all';
+let PROD_EDIT_ID  = null;
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function fmt(n) { return '$ ' + Math.round(n).toLocaleString('es-CO'); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function genId() { return 'r-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function abrirOverlay(id) { document.getElementById(id).classList.add('open'); }
+function cerrarOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ══════════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════════ */
+let VIEW_ACTUAL = 'mesas';
+function goTo(view, btn) {
+  if (VIEW_ACTUAL === view) return;
+  VIEW_ACTUAL = view;
+
+  // desktop tabs
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  // mobile tabs
+  document.querySelectorAll('.bnav-btn').forEach(t => t.classList.remove('active'));
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  if (btn) btn.classList.add('active');
+
+  if (view === 'mesas')      cargarMesas();
+  if (view === 'domicilios') cargarDomicilios();
+  if (view === 'menu')       renderMenu();
+  if (view === 'reportes')   cargarReportes();
+}
+
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+async function salir() {
+  await _sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+
+/* ══════════════════════════════════════════
+   MESAS
+══════════════════════════════════════════ */
+async function cargarMesas() {
+  const { data: mesas, error } = await _sb
+    .from('mesas')
+    .select('*')
+    .eq('user_id', USER_ID)
+    .order('numero');
+
+  const grid = document.getElementById('mesasGrid');
+
+  if (error || !mesas?.length) {
+    grid.innerHTML = `<div class="mesa-empty">
+      <span style="font-size:40px;display:block;margin-bottom:12px;opacity:.4">🪑</span>
+      No hay mesas. Crea la primera con el botón de arriba.
+    </div>`;
+    return;
+  }
+
+  // Cargar totales de mesas ocupadas
+  const pedidosAbiertos = {};
+  const { data: pedidos } = await _sb
+    .from('pedidos')
+    .select('id, mesa_id, total')
+    .eq('user_id', USER_ID)
+    .eq('estado', 'abierto');
+  if (pedidos) pedidos.forEach(p => { pedidosAbiertos[p.mesa_id] = p; });
+
+  grid.innerHTML = mesas.map(m => {
+    const pedido = pedidosAbiertos[m.id];
+    const estado = m.estado === 'ocupada' ? 'ocupada' : 'libre';
+    return `
+      <div class="mesa-card ${estado}" onclick="abrirMesa('${m.id}', '${estado}', ${m.numero})">
+        <button class="mesa-del" onclick="eliminarMesa(event,'${m.id}','${estado}')">×</button>
+        <span class="mesa-num">Mesa ${m.numero}</span>
+        <span class="mesa-status">${estado === 'libre' ? '✓ Libre' : '● Ocupada'}</span>
+        ${pedido ? `<span class="mesa-total">${fmt(pedido.total || 0)}</span>` : ''}
+      </div>`;
+  }).join('');
+}
+
+async function crearMesa() {
+  const { data: existentes } = await _sb.from('mesas').select('numero').eq('user_id', USER_ID);
+  const nums = existentes?.map(m => m.numero) || [];
+  let sig = 1;
+  while (nums.includes(sig)) sig++;
+
+  const { error } = await _sb.from('mesas').insert({ user_id: USER_ID, numero: sig, estado: 'libre' });
+  if (error) { toast('Error al crear mesa'); return; }
+  toast(`✓ Mesa ${sig} creada`);
+  cargarMesas();
+}
+
+async function eliminarMesa(e, mesaId, estado) {
+  e.stopPropagation();
+  if (estado === 'ocupada') { toast('⚠️ Cierra el pedido antes de eliminar'); return; }
+  if (!confirm('¿Eliminar esta mesa?')) return;
+  await _sb.from('mesas').delete().eq('id', mesaId);
+  toast('Mesa eliminada');
+  cargarMesas();
+}
+
+async function abrirMesa(mesaId, estado, numero) {
+  MESA_ID  = mesaId;
+  MESA_NUM = numero;
+
+  if (estado === 'libre') {
+    // Crear pedido nuevo y marcar mesa como ocupada
+    const { data: pedido, error } = await _sb
+      .from('pedidos')
+      .insert({ user_id: USER_ID, mesa_id: mesaId, estado: 'abierto', total: 0 })
+      .select().single();
+    if (error) { toast('Error al abrir mesa'); return; }
+    PEDIDO_ID = pedido.id;
+    await _sb.from('mesas').update({ estado: 'ocupada' }).eq('id', mesaId);
+    cargarMesas();
+  } else {
+    // Buscar pedido abierto
+    const { data: pedido } = await _sb
+      .from('pedidos')
+      .select('id, total')
+      .eq('mesa_id', mesaId)
+      .eq('estado', 'abierto')
+      .single();
+    if (!pedido) { toast('No se encontró el pedido activo'); return; }
+    PEDIDO_ID = pedido.id;
+  }
+
+  document.getElementById('pedidoTitle').textContent = `Mesa ${numero}`;
+  await recargarPedido();
+  abrirOverlay('pedidoOverlay');
+}
+
+async function recargarPedido() {
+  const { data: items } = await _sb
+    .from('pedido_items')
+    .select('*')
+    .eq('pedido_id', PEDIDO_ID)
+    .order('created_at');
+
+  PEDIDO_ITEMS = items || [];
+  PEDIDO_TOTAL = PEDIDO_ITEMS.reduce((a, i) => a + i.precio * i.cantidad, 0);
+
+  document.getElementById('pedidoTotalVal').textContent = fmt(PEDIDO_TOTAL);
+
+  const container = document.getElementById('pedidoItems');
+  if (!PEDIDO_ITEMS.length) {
+    container.innerHTML = '<div class="pedido-empty">Sin ítems aún. Agrega productos.</div>';
+    return;
+  }
+  container.innerHTML = PEDIDO_ITEMS.map(i => `
+    <div class="pedido-item">
+      <span class="pi-emoji">${i.emoji || '🍽️'}</span>
+      <div class="pi-info">
+        <div class="pi-nombre">${i.nombre}</div>
+        <div class="pi-qty">${i.cantidad} × ${fmt(i.precio)}</div>
+      </div>
+      <span class="pi-precio">${fmt(i.precio * i.cantidad)}</span>
+      <button style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:4px" onclick="quitarItem('${i.id}')">×</button>
+    </div>`).join('');
+}
+
+async function quitarItem(itemId) {
+  await _sb.from('pedido_items').delete().eq('id', itemId);
+  await recalcularTotal();
+  await recargarPedido();
+}
+
+async function recalcularTotal() {
+  const { data: items } = await _sb.from('pedido_items').select('precio, cantidad').eq('pedido_id', PEDIDO_ID);
+  const total = items?.reduce((a, i) => a + i.precio * i.cantidad, 0) || 0;
+  await _sb.from('pedidos').update({ total }).eq('id', PEDIDO_ID);
+  PEDIDO_TOTAL = total;
+}
+
+function cerrarPedido() {
+  cerrarOverlay('pedidoOverlay');
+  PEDIDO_ID = null; MESA_ID = null; MESA_NUM = null; PEDIDO_ITEMS = [];
+}
+
+function closePedidoOnBg(e) { if (e.target.id === 'pedidoOverlay') cerrarPedido(); }
+
+/* ══════════════════════════════════════════
+   SELECTOR DE ITEMS
+══════════════════════════════════════════ */
+function abrirSelectorItems() {
+  ITEMS_CONTEXT = 'mesa';
+  ITEMS_CAT = 'all';
+  document.getElementById('itemsTitle').textContent = `Agregar a Mesa ${MESA_NUM}`;
+  document.getElementById('itemsSearch').value = '';
+  renderCatsItems();
+  renderItemsGrid();
+  document.getElementById('itemsOverlay').classList.add('open');
+}
+
+function abrirSelectorItemsDom() {
+  ITEMS_CONTEXT = 'dom';
+  ITEMS_CAT = 'all';
+  document.getElementById('itemsTitle').textContent = 'Agregar al domicilio';
+  document.getElementById('itemsSearch').value = '';
+  renderCatsItems();
+  renderItemsGrid();
+  document.getElementById('itemsOverlay').classList.add('open');
+}
+
+function cerrarSelectorItems() {
+  document.getElementById('itemsOverlay').classList.remove('open');
+  if (ITEMS_CONTEXT === 'mesa') recargarPedido();
+  if (ITEMS_CONTEXT === 'dom')  renderDomItems();
+  ITEMS_CONTEXT = null;
+}
+
+function renderCatsItems() {
+  const cats = [{ id: 'all', nombre: 'Todos', icon: '🏪' }, ...CATEGORIAS];
+  document.getElementById('itemsCats').innerHTML = cats.map(c => `
+    <div class="items-cat ${ITEMS_CAT === c.id ? 'active' : ''}" onclick="setItemsCat('${c.id}')">
+      ${c.icon || ''} ${c.nombre}
+    </div>`).join('');
+}
+
+function setItemsCat(id) { ITEMS_CAT = id; renderCatsItems(); renderItemsGrid(); }
+
+function renderItemsGrid() {
+  const q = document.getElementById('itemsSearch').value.toLowerCase();
+  let prods = PRODUCTOS.filter(p => {
+    const matchQ   = !q || p.nombre.toLowerCase().includes(q);
+    const matchCat = ITEMS_CAT === 'all' || p.categoria === ITEMS_CAT;
+    return matchQ && matchCat;
+  });
+
+  const grid = document.getElementById('itemsGrid');
+  if (!prods.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Sin productos</div>';
+    return;
+  }
+  grid.innerHTML = prods.map(p => `
+    <div class="item-card" onclick="agregarItemAlContexto('${p.id}')">
+      <span class="item-emoji">${p.emoji || '🍽️'}</span>
+      <div class="item-name">${p.nombre}</div>
+      <div class="item-price">${fmt(p.precio)}</div>
+    </div>`).join('');
+}
+
+async function agregarItemAlContexto(prodId) {
+  const prod = PRODUCTOS.find(p => p.id === prodId);
+  if (!prod) return;
+
+  if (ITEMS_CONTEXT === 'mesa') {
+    await agregarItemAPedido(prod);
+    // Animación en la tarjeta
+    toast(`✓ ${prod.nombre} agregado`);
+  } else if (ITEMS_CONTEXT === 'dom') {
+    const ex = DOM_ITEMS.find(i => i.producto_id === prodId);
+    if (ex) { ex.cantidad++; }
+    else {
+      DOM_ITEMS.push({
+        producto_id: prodId,
+        nombre: prod.nombre,
+        emoji: prod.emoji || '🍽️',
+        precio: prod.precio,
+        cantidad: 1
+      });
+    }
+    DOM_TOTAL = DOM_ITEMS.reduce((a, i) => a + i.precio * i.cantidad, 0);
+    toast(`✓ ${prod.nombre} agregado`);
+  }
+}
+
+async function agregarItemAPedido(prod) {
+  if (!PEDIDO_ID) return;
+
+  // Check if item exists in current order
+  const { data: existente } = await _sb
+    .from('pedido_items')
+    .select('id, cantidad')
+    .eq('pedido_id', PEDIDO_ID)
+    .eq('producto_id', prod.id)
+    .single();
+
+  if (existente) {
+    await _sb.from('pedido_items').update({ cantidad: existente.cantidad + 1 }).eq('id', existente.id);
+  } else {
+    await _sb.from('pedido_items').insert({
+      pedido_id: PEDIDO_ID,
+      producto_id: prod.id,
+      nombre: prod.nombre,
+      emoji: prod.emoji || '🍽️',
+      precio: prod.precio,
+      cantidad: 1
+    });
+  }
+  await recalcularTotal();
+}
+
+/* ══════════════════════════════════════════
+   COMANDA
+══════════════════════════════════════════ */
+function mostrarComanda() {
+  if (!PEDIDO_ITEMS.length) { toast('⚠️ No hay ítems en el pedido'); return; }
+  const hora  = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  const fecha = new Date().toLocaleDateString('es-CO');
+
+  document.getElementById('comandaTicket').innerHTML = `
+    <h4>Mesa ${MESA_NUM}</h4>
+    <div class="comanda-meta">${fecha} — ${hora}</div>
+    <ul class="comanda-ul">
+      ${PEDIDO_ITEMS.map(i => `<li><span>${i.cantidad}× ${i.nombre}</span></li>`).join('')}
+    </ul>`;
+
+  abrirOverlay('comandaOverlay');
+}
+
+function imprimirComanda() {
+  const html = document.getElementById('comandaTicket').innerHTML;
+  const w = window.open('', '_blank', 'width=320,height=500');
+  w.document.write(`<!DOCTYPE html><html><head><title>Comanda</title>
+    <style>
+      body { font-family: 'Courier New', monospace; font-size: 14px; padding: 12px; }
+      h4 { text-align: center; font-size: 18px; border-bottom: 1px dashed #999; padding-bottom: 8px; margin-bottom: 8px; }
+      .comanda-meta { text-align: center; font-size: 11px; color: #666; margin-bottom: 12px; }
+      ul { list-style: none; padding: 0; }
+      li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #eee; }
+    </style></head><body>${html}</body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
+/* ══════════════════════════════════════════
+   COBRO
+══════════════════════════════════════════ */
+function abrirCobro() {
+  COBRO_MODE = 'completo';
+  DIVISIONES = [];
+  document.getElementById('cobroTitle').textContent  = `Cobrar Mesa ${MESA_NUM}`;
+  document.getElementById('cobroTotalVal').textContent = fmt(PEDIDO_TOTAL);
+  document.getElementById('optCompleto').classList.add('active');
+  document.getElementById('optDividir').classList.remove('active');
+  document.getElementById('cobro-panel-dividir').style.display = 'none';
+  document.getElementById('divisionesList').innerHTML = '';
+  abrirOverlay('cobroOverlay');
+}
+
+function setCobroMode(mode) {
+  COBRO_MODE = mode;
+  document.getElementById('optCompleto').classList.toggle('active', mode === 'completo');
+  document.getElementById('optDividir').classList.toggle('active', mode === 'dividir');
+  document.getElementById('cobro-panel-dividir').style.display = mode === 'dividir' ? 'block' : 'none';
+  if (mode === 'dividir' && !DIVISIONES.length) agregarDivision();
+}
+
+function agregarDivision() {
+  DIVISIONES.push(0);
+  renderDivisiones();
+}
+
+function renderDivisiones() {
+  document.getElementById('divisionesList').innerHTML = DIVISIONES.map((v, i) => `
+    <div class="division-row">
+      <span class="division-label">Persona ${i + 1}</span>
+      <input class="division-input" type="number" value="${v || ''}"
+             placeholder="$ monto" oninput="updDivision(${i}, this.value)">
+    </div>`).join('');
+  actualizarFaltante();
+}
+
+function updDivision(i, val) {
+  DIVISIONES[i] = parseFloat(val) || 0;
+  actualizarFaltante();
+}
+
+function actualizarFaltante() {
+  const pagado   = DIVISIONES.reduce((a, v) => a + v, 0);
+  const faltante = PEDIDO_TOTAL - pagado;
+  const el = document.getElementById('cobroFaltante');
+  el.textContent  = fmt(Math.max(0, faltante));
+  el.style.color  = faltante <= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+async function confirmarCobro() {
+  if (COBRO_MODE === 'dividir') {
+    const pagado   = DIVISIONES.reduce((a, v) => a + v, 0);
+    if (pagado < PEDIDO_TOTAL - 1) { toast('⚠️ El monto no cubre el total'); return; }
+  }
+
+  const btn = document.getElementById('btnConfirmarCobro');
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Procesando...';
+
+  try {
+    // Registrar venta
+    await _sb.from('ventas').insert({
+      id: genId(),
+      orden: String(Math.floor(Math.random() * 9000) + 1000),
+      items: JSON.stringify(PEDIDO_ITEMS),
+      subtotal: PEDIDO_TOTAL,
+      iva: 0,
+      total: PEDIDO_TOTAL,
+      metodo: 'efectivo',
+      user_id: USER_ID
+    });
+
+    // Cerrar pedido
+    await _sb.from('pedidos').update({
+      estado: 'cobrado',
+      cerrado_en: new Date().toISOString()
+    }).eq('id', PEDIDO_ID);
+
+    // Liberar mesa
+    await _sb.from('mesas').update({ estado: 'libre' }).eq('id', MESA_ID);
+
+    cerrarOverlay('cobroOverlay');
+    cerrarPedido();
+    cargarMesas();
+    toast(`✓ Pago registrado — ${fmt(PEDIDO_TOTAL)}`);
+  } catch (e) {
+    toast('Error al procesar el pago');
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = '✓ Confirmar pago';
+  }
+}
+
+/* ══════════════════════════════════════════
+   DOMICILIOS
+══════════════════════════════════════════ */
+async function cargarDomicilios() {
+  const hoy = todayStr();
+  const { data: doms } = await _sb
+    .from('domicilios')
+    .select('*, pedidos(total)')
+    .eq('user_id', USER_ID)
+    .gte('created_at', hoy + 'T00:00:00')
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('domiciliosList');
+  if (!doms?.length) {
+    list.innerHTML = '<div class="empty-state"><span class="es-icon">🛵</span>No hay domicilios hoy</div>';
+    return;
+  }
+
+  const estadoOpts = ['pendiente','en_camino','entregado'].map(e =>
+    `<option value="${e}">${e.replace('_',' ')}</option>`
+  ).join('');
+
+  list.innerHTML = doms.map(d => `
+    <div class="domicilio-card">
+      <div class="dom-icon">🛵</div>
+      <div class="dom-info">
+        <div class="dom-nombre">${d.cliente_nombre}</div>
+        <div class="dom-dir">${d.cliente_direccion}</div>
+        <div class="dom-total">${d.pedidos?.total != null ? fmt(d.pedidos.total) : '—'}</div>
+      </div>
+      <select class="dom-status-sel" onchange="cambiarEstadoDom('${d.id}', this.value)">
+        ${['pendiente','en_camino','entregado'].map(e =>
+          `<option value="${e}" ${d.estado === e ? 'selected' : ''}>${e.replace('_',' ')}</option>`
+        ).join('')}
+      </select>
+    </div>`).join('');
+}
+
+function abrirFormDomicilio() {
+  DOM_ITEMS = [];
+  DOM_TOTAL = 0;
+  document.getElementById('domNombre').value = '';
+  document.getElementById('domDir').value    = '';
+  renderDomItems();
+  abrirOverlay('domicilioOverlay');
+}
+
+function renderDomItems() {
+  document.getElementById('domTotalVal').textContent = fmt(DOM_TOTAL);
+  const list = document.getElementById('domItemsList');
+  if (!DOM_ITEMS.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin ítems aún</div>';
+    return;
+  }
+  list.innerHTML = DOM_ITEMS.map((i, idx) => `
+    <div class="pedido-item">
+      <span class="pi-emoji">${i.emoji}</span>
+      <div class="pi-info">
+        <div class="pi-nombre">${i.nombre}</div>
+        <div class="pi-qty">${i.cantidad} × ${fmt(i.precio)}</div>
+      </div>
+      <span class="pi-precio">${fmt(i.precio * i.cantidad)}</span>
+      <button style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:4px"
+              onclick="quitarItemDom(${idx})">×</button>
+    </div>`).join('');
+}
+
+function quitarItemDom(idx) {
+  DOM_ITEMS.splice(idx, 1);
+  DOM_TOTAL = DOM_ITEMS.reduce((a, i) => a + i.precio * i.cantidad, 0);
+  renderDomItems();
+}
+
+async function crearDomicilio() {
+  const nombre = document.getElementById('domNombre').value.trim();
+  const dir    = document.getElementById('domDir').value.trim();
+  if (!nombre || !dir) { toast('⚠️ Nombre y dirección son requeridos'); return; }
+  if (!DOM_ITEMS.length) { toast('⚠️ Agrega al menos un ítem'); return; }
+
+  // Crear pedido
+  const { data: pedido, error: pe } = await _sb
+    .from('pedidos')
+    .insert({ user_id: USER_ID, estado: 'abierto', total: DOM_TOTAL })
+    .select().single();
+  if (pe) { toast('Error al crear pedido'); return; }
+
+  // Insertar items
+  await _sb.from('pedido_items').insert(
+    DOM_ITEMS.map(i => ({ ...i, pedido_id: pedido.id }))
+  );
+
+  // Actualizar total
+  await _sb.from('pedidos').update({ total: DOM_TOTAL, estado: 'cobrado', cerrado_en: new Date().toISOString() }).eq('id', pedido.id);
+
+  // Registrar venta
+  await _sb.from('ventas').insert({
+    id: genId(), orden: String(Math.floor(Math.random() * 9000) + 1000),
+    items: JSON.stringify(DOM_ITEMS), subtotal: DOM_TOTAL, iva: 0,
+    total: DOM_TOTAL, metodo: 'domicilio', user_id: USER_ID
+  });
+
+  // Crear domicilio
+  await _sb.from('domicilios').insert({
+    user_id: USER_ID, cliente_nombre: nombre,
+    cliente_direccion: dir, pedido_id: pedido.id, estado: 'pendiente'
+  });
+
+  cerrarOverlay('domicilioOverlay');
+  cargarDomicilios();
+  toast(`✓ Domicilio creado para ${nombre}`);
+}
+
+async function cambiarEstadoDom(domId, estado) {
+  await _sb.from('domicilios').update({ estado }).eq('id', domId);
+  toast(`Estado actualizado: ${estado.replace('_', ' ')}`);
+}
+
+function closeDomOnBg(e) { if (e.target.id === 'domicilioOverlay') cerrarOverlay('domicilioOverlay'); }
+
+/* ══════════════════════════════════════════
+   MENÚ (PRODUCTOS)
+══════════════════════════════════════════ */
+async function cargarProductos() {
+  const [{ data: cats }, { data: prods }] = await Promise.all([
+    _sb.from('categorias').select('*').eq('user_id', USER_ID).order('created_at'),
+    _sb.from('productos').select('*').eq('user_id', USER_ID).order('created_at')
+  ]);
+  CATEGORIAS = cats || [];
+  PRODUCTOS  = (prods || []).map(p => ({
+    id: p.id, nombre: p.nombre, precio: p.precio,
+    emoji: p.emoji || '🍽️', categoria: p.categoria || 'general',
+    stock: p.stock || 0
+  }));
+  renderMenu();
+}
+
+function renderMenu() {
+  const q = (document.getElementById('menuSearch')?.value || '').toLowerCase();
+  const prods = PRODUCTOS.filter(p => !q || p.nombre.toLowerCase().includes(q));
+  const grid  = document.getElementById('menuGrid');
+
+  if (!prods.length) {
+    grid.innerHTML = '<div class="empty-state"><span class="es-icon">🍱</span>No hay productos aún</div>';
+    return;
+  }
+  grid.innerHTML = prods.map(p => `
+    <div class="prod-card">
+      <span class="prod-emoji">${p.emoji}</span>
+      <div class="prod-nombre">${p.nombre}</div>
+      <div class="prod-precio">${fmt(p.precio)}</div>
+      <div class="prod-actions">
+        <button class="prod-btn prod-btn-edit" onclick="editarProducto('${p.id}')">✏️ Editar</button>
+        <button class="prod-btn prod-btn-del"  onclick="eliminarProducto('${p.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function abrirFormProducto(id) {
+  PROD_EDIT_ID = id || null;
+  const prod = id ? PRODUCTOS.find(p => p.id === id) : null;
+  document.getElementById('prodModalTitle').textContent = prod ? 'Editar producto' : 'Nuevo producto';
+  document.getElementById('prodEmoji').value  = prod?.emoji  || '';
+  document.getElementById('prodNombre').value = prod?.nombre || '';
+  document.getElementById('prodPrecio').value = prod?.precio || '';
+
+  // Poblar categorías
+  const cats = [{ id: 'general', nombre: 'General' }, ...CATEGORIAS];
+  document.getElementById('prodCat').innerHTML = cats.map(c =>
+    `<option value="${c.id}" ${(prod?.categoria === c.id) ? 'selected' : ''}>${c.nombre}</option>`
+  ).join('');
+
+  abrirOverlay('productoOverlay');
+}
+
+function editarProducto(id) { abrirFormProducto(id); }
+
+async function guardarProducto() {
+  const emoji  = document.getElementById('prodEmoji').value.trim() || '🍽️';
+  const nombre = document.getElementById('prodNombre').value.trim();
+  const precio = parseFloat(document.getElementById('prodPrecio').value);
+  const cat    = document.getElementById('prodCat').value;
+
+  if (!nombre)    { toast('⚠️ Escribe el nombre'); return; }
+  if (isNaN(precio) || precio <= 0) { toast('⚠️ Precio inválido'); return; }
+
+  if (PROD_EDIT_ID) {
+    await _sb.from('productos').update({
+      nombre, precio, emoji, categoria: cat
+    }).eq('id', PROD_EDIT_ID).eq('user_id', USER_ID);
+    toast('✓ Producto actualizado');
+  } else {
+    const id = genId();
+    await _sb.from('productos').insert({
+      id, nombre, precio, emoji, categoria: cat,
+      costo: 0, stock: 0, descuento: 0, user_id: USER_ID
+    });
+    toast('✓ Producto creado');
+  }
+
+  cerrarOverlay('productoOverlay');
+  await cargarProductos();
+}
+
+async function eliminarProducto(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  await _sb.from('productos').delete().eq('id', id);
+  toast('Producto eliminado');
+  await cargarProductos();
+}
+
+function closeProdOnBg(e) { if (e.target.id === 'productoOverlay') cerrarOverlay('productoOverlay'); }
+
+/* ══════════════════════════════════════════
+   REPORTES
+══════════════════════════════════════════ */
+async function cargarReportes() {
+  const hoy   = todayStr();
+  const semana = new Date();
+  semana.setDate(semana.getDate() - 7);
+  const semanaStr = semana.toISOString().split('T')[0];
+
+  const [{ data: ventasHoy }, { data: ventasSemana }, { data: doms }, { data: mesas }] = await Promise.all([
+    _sb.from('ventas').select('total').eq('user_id', USER_ID).gte('created_at', hoy + 'T00:00:00'),
+    _sb.from('ventas').select('total').eq('user_id', USER_ID).gte('created_at', semanaStr + 'T00:00:00'),
+    _sb.from('domicilios').select('id').eq('user_id', USER_ID).gte('created_at', hoy + 'T00:00:00'),
+    _sb.from('mesas').select('estado').eq('user_id', USER_ID).eq('estado', 'ocupada')
+  ]);
+
+  const sumHoy    = ventasHoy?.reduce((a, v) => a + (v.total || 0), 0) || 0;
+  const sumSemana = ventasSemana?.reduce((a, v) => a + (v.total || 0), 0) || 0;
+
+  document.getElementById('rVentasHoy').textContent   = fmt(sumHoy);
+  document.getElementById('rCantHoy').textContent     = `${ventasHoy?.length || 0} pedidos`;
+  document.getElementById('rVentasSemana').textContent = fmt(sumSemana);
+  document.getElementById('rCantSemana').textContent   = `${ventasSemana?.length || 0} pedidos`;
+  document.getElementById('rDomHoy').textContent      = doms?.length || 0;
+  document.getElementById('rMesasActivas').textContent = mesas?.length || 0;
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+(async () => {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session?.user) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  USER_ID   = session.user.id;
+  USER_NAME = session.user.email.split('@')[0];
+
+  document.getElementById('userName').textContent   = USER_NAME;
+  document.getElementById('userAvatar').textContent  = USER_NAME.charAt(0).toUpperCase();
+
+  // Verificar que sea restaurante
+  const { data: perfil } = await _sb.from('perfiles').select('tipo_negocio').eq('id', USER_ID).single();
+  if (perfil && perfil.tipo_negocio !== 'restaurante') {
+    window.location.href = 'pos-tienda.html';
+    return;
+  }
+
+  await cargarProductos();
+  await cargarMesas();
+})();
+</script>
+</body>
+</html>
