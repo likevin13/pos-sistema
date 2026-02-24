@@ -1041,13 +1041,13 @@ async function salir() {
    MESAS
 ══════════════════════════════════════════ */
 async function cargarMesas() {
-  const { data: mesas, error } = await _sb
-    .from('mesas')
-    .select('*')
-    .eq('user_id', USER_ID)
-    .order('numero');
-
   const grid = document.getElementById('mesasGrid');
+
+  // Cargar mesas y pedidos abiertos en paralelo
+  const [{ data: mesas, error }, { data: pedidos }] = await Promise.all([
+    _sb.from('mesas').select('*').eq('user_id', USER_ID).order('numero'),
+    _sb.from('pedidos').select('id, mesa_id, total').eq('user_id', USER_ID).eq('estado', 'abierto')
+  ]);
 
   if (error || !mesas?.length) {
     grid.innerHTML = `<div class="mesa-empty">
@@ -1057,13 +1057,7 @@ async function cargarMesas() {
     return;
   }
 
-  // Cargar totales de mesas ocupadas
   const pedidosAbiertos = {};
-  const { data: pedidos } = await _sb
-    .from('pedidos')
-    .select('id, mesa_id, total')
-    .eq('user_id', USER_ID)
-    .eq('estado', 'abierto');
   if (pedidos) pedidos.forEach(p => { pedidosAbiertos[p.mesa_id] = p; });
 
   grid.innerHTML = mesas.map(m => {
@@ -1103,39 +1097,39 @@ async function eliminarMesa(e, mesaId, estado) {
 async function abrirMesa(mesaId, estado, numero) {
   MESA_ID  = mesaId;
   MESA_NUM = numero;
+  PEDIDO_ID = null; PEDIDO_ITEMS = []; PEDIDO_TOTAL = 0;
 
-  if (estado === 'libre') {
-    // Crear pedido nuevo y marcar mesa como ocupada
-    const { data: pedido, error } = await _sb
-      .from('pedidos')
-      .insert({ user_id: USER_ID, mesa_id: mesaId, estado: 'abierto', total: 0 })
-      .select().single();
-    if (error) { toast('Error al abrir mesa'); return; }
-    PEDIDO_ID = pedido.id;
-    await _sb.from('mesas').update({ estado: 'ocupada' }).eq('id', mesaId);
-    cargarMesas();
-  } else {
-    // Buscar pedido abierto
-    const { data: pedido } = await _sb
-      .from('pedidos')
-      .select('id, total')
-      .eq('mesa_id', mesaId)
-      .eq('estado', 'abierto')
-      .single();
-    if (!pedido) { toast('No se encontró el pedido activo'); return; }
-    PEDIDO_ID = pedido.id;
-  }
-
+  // Mostrar vista inmediatamente (optimistic)
   document.getElementById('posMesaTitle').textContent = `Mesa ${numero}`;
   POS_CAT = 'all';
   document.getElementById('posSearch').value = '';
   renderPosCats();
   renderPosProds();
-  await recargarPedido();
-  // Mostrar vista POS split-screen
+  renderPosOrder();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-pos-mesa').classList.add('active');
   VIEW_ACTUAL = 'pos-mesa';
+
+  if (estado === 'libre') {
+    // INSERT pedido y UPDATE mesa en paralelo
+    const [{ data: pedido, error }] = await Promise.all([
+      _sb.from('pedidos').insert({ user_id: USER_ID, mesa_id: mesaId, estado: 'abierto', total: 0 }).select().single(),
+      _sb.from('mesas').update({ estado: 'ocupada' }).eq('id', mesaId)
+    ]);
+    if (error || !pedido) { toast('Error al abrir mesa'); return; }
+    PEDIDO_ID = pedido.id;
+    cargarMesas(); // refrescar grid en fondo
+    // Mesa nueva = pedido vacío, no hay items que cargar
+  } else {
+    // Obtener pedido abierto
+    const { data: pedido } = await _sb
+      .from('pedidos').select('id, total')
+      .eq('mesa_id', mesaId).eq('estado', 'abierto').single();
+    if (!pedido) { toast('No se encontró el pedido activo'); return; }
+    PEDIDO_ID = pedido.id;
+    // Cargar items del pedido (ya en la vista)
+    await recargarPedido();
+  }
 }
 
 async function recargarPedido() {
@@ -1197,9 +1191,9 @@ function setPosCat(catId) {
 function renderPosProds() {
   const q = (document.getElementById('posSearch').value || '').toLowerCase();
   const prods = PRODUCTOS.filter(p => {
-    const matchCat = POS_CAT === 'all' || p.categoria_id === POS_CAT;
+    const matchCat = POS_CAT === 'all' || p.categoria === POS_CAT;
     const matchQ   = !q || p.nombre.toLowerCase().includes(q);
-    return matchCat && matchQ && p.activo !== false;
+    return matchCat && matchQ;
   });
   const grid = document.getElementById('posProdsGrid');
   if (!prods.length) {
@@ -1742,15 +1736,16 @@ async function cargarReportes() {
   document.getElementById('userName').textContent   = USER_NAME;
   document.getElementById('userAvatar').textContent  = USER_NAME.charAt(0).toUpperCase();
 
-  // Verificar que sea restaurante
-  const { data: perfil } = await _sb.from('perfiles').select('tipo_negocio').eq('id', USER_ID).single();
+  // Verificar perfil y cargar datos en paralelo
+  const [{ data: perfil }] = await Promise.all([
+    _sb.from('perfiles').select('tipo_negocio').eq('id', USER_ID).maybeSingle(),
+    cargarProductos(),
+    cargarMesas()
+  ]);
   if (perfil && perfil.tipo_negocio !== 'restaurante') {
     window.location.href = 'pos-tienda.html';
     return;
   }
-
-  await cargarProductos();
-  await cargarMesas();
 })();
 </script>
 </body>
