@@ -400,7 +400,9 @@
     .items-cat.active { background: var(--navy); color: white; border-color: var(--navy); }
     .items-grid {
       flex: 1; overflow-y: auto;
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fill, 150px);
+      justify-content: start;
+      align-content: start;
       gap: 10px; padding: 10px 20px 20px;
     }
     .item-card {
@@ -1108,9 +1110,8 @@ async function agregarItemAlContexto(prodId) {
   if (!prod) return;
 
   if (ITEMS_CONTEXT === 'mesa') {
-    await agregarItemAPedido(prod);
-    // Animación en la tarjeta
-    toast(`✓ ${prod.nombre} agregado`);
+    const ok = await agregarItemAPedido(prod);
+    if (ok) toast(`✓ ${prod.nombre} agregado`);
   } else if (ITEMS_CONTEXT === 'dom') {
     const ex = DOM_ITEMS.find(i => i.producto_id === prodId);
     if (ex) { ex.cantidad++; }
@@ -1129,20 +1130,23 @@ async function agregarItemAlContexto(prodId) {
 }
 
 async function agregarItemAPedido(prod) {
-  if (!PEDIDO_ID) return;
+  if (!PEDIDO_ID) { toast('⚠️ Error: no hay pedido activo'); return false; }
 
-  // Check if item exists in current order
-  const { data: existente } = await _sb
+  // Verificar si el ítem ya existe en el pedido
+  const { data: existente, error: errBuscar } = await _sb
     .from('pedido_items')
     .select('id, cantidad')
     .eq('pedido_id', PEDIDO_ID)
     .eq('producto_id', prod.id)
-    .single();
+    .maybeSingle();
 
   if (existente) {
-    await _sb.from('pedido_items').update({ cantidad: existente.cantidad + 1 }).eq('id', existente.id);
+    const { error } = await _sb.from('pedido_items')
+      .update({ cantidad: existente.cantidad + 1 })
+      .eq('id', existente.id);
+    if (error) { toast('❌ Error al actualizar: ' + error.message); return false; }
   } else {
-    await _sb.from('pedido_items').insert({
+    const { error } = await _sb.from('pedido_items').insert({
       pedido_id: PEDIDO_ID,
       producto_id: prod.id,
       nombre: prod.nombre,
@@ -1150,8 +1154,10 @@ async function agregarItemAPedido(prod) {
       precio: prod.precio,
       cantidad: 1
     });
+    if (error) { toast('❌ Error al agregar: ' + error.message); return false; }
   }
   await recalcularTotal();
+  return true;
 }
 
 /* ══════════════════════════════════════════
