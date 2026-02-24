@@ -169,68 +169,61 @@
     .btn-block { width: 100%; }
 
     /* ══════════════════════════════════════════
-       MESAS FLOOR PLAN
+       MESAS FLOOR PLAN — Clean & Simple
     ══════════════════════════════════════════ */
     #view-mesas { padding: 0 !important; display: flex !important; flex-direction: column; }
 
     .floor-toolbar {
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 20px; height: 46px; flex-shrink: 0;
-      background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%);
-      border-bottom: 1px solid rgba(255,255,255,0.07); gap: 12px;
+      background: #fff; border-bottom: 1px solid #E8ECF0; gap: 12px;
     }
     .floor-legend { display: flex; gap: 16px; align-items: center; }
-    .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); }
+    .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #8A9BB0; }
     .legend-pip   { width: 10px; height: 10px; border-radius: 50%; }
-    .legend-pip.libre   { background: rgba(255,255,255,0.75); }
-    .legend-pip.ocupada { background: var(--amber); box-shadow: 0 0 7px rgba(217,119,6,0.8); }
+    .legend-pip.libre   { background: #C4CAD6; }
+    .legend-pip.ocupada { background: var(--amber); }
     .floor-toolbar-right { display: flex; align-items: center; gap: 8px; }
     .btn-edit-mode {
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.55); border-radius: 9px;
-      padding: 7px 14px; font-family: 'Lato', sans-serif;
+      background: #F4F6F9; border: 1px solid #DDE2EA;
+      color: #6B7A8D; border-radius: 8px;
+      padding: 6px 13px; font-family: 'Lato', sans-serif;
       font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
     }
-    .btn-edit-mode:hover  { background: rgba(255,255,255,0.12); color: white; }
-    .btn-edit-mode.active { background: rgba(217,119,6,0.2); border-color: rgba(217,119,6,0.5); color: #FCD34D; }
+    .btn-edit-mode:hover  { background: #E8ECF2; color: #3A4A5C; }
+    .btn-edit-mode.active { background: #FFF7ED; border-color: #F59E0B; color: #B45309; }
     .btn-floor-add {
-      background: linear-gradient(135deg, var(--amber), #B45309);
-      color: white; border: none; border-radius: 9px;
-      padding: 8px 16px; font-family: 'Lato', sans-serif;
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 3px 10px rgba(217,119,6,0.4); transition: all 0.15s;
+      background: var(--navy); color: white; border: none; border-radius: 8px;
+      padding: 7px 15px; font-family: 'Lato', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s;
     }
-    .btn-floor-add:hover { box-shadow: 0 5px 16px rgba(217,119,6,0.6); }
+    .btn-floor-add:hover { background: var(--mid); }
 
-    /* Canvas */
+    /* Canvas — light, clean */
     .mesas-canvas {
       flex: 1; position: relative; overflow: hidden;
-      background: #1A1F2E;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-      background-size: 48px 48px;
+      background: #F2F4F7;
     }
     .mesas-canvas.edit-mode {
       background-image:
-        linear-gradient(rgba(217,119,6,0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(217,119,6,0.08) 1px, transparent 1px);
+        linear-gradient(#E4E8EE 1px, transparent 1px),
+        linear-gradient(90deg, #E4E8EE 1px, transparent 1px);
       background-size: 48px 48px;
     }
     .floor-plant {
-      position: absolute; font-size: 36px; pointer-events: none;
-      opacity: 0.7; user-select: none; z-index: 1;
+      position: absolute; font-size: 32px; pointer-events: none;
+      opacity: 0.55; user-select: none; z-index: 1;
     }
     .floor-empty {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      text-align: center; color: rgba(255,255,255,0.2); font-size: 14px; z-index: 1;
+      text-align: center; color: #B0BBCA; font-size: 14px; z-index: 1;
     }
     .floor-edit-hint {
       position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
-      background: rgba(217,119,6,0.15); border: 1px solid rgba(217,119,6,0.4);
-      color: #FCD34D; font-size: 11px; font-weight: 700;
+      background: #FFF7ED; border: 1px solid #F59E0B;
+      color: #B45309; font-size: 11px; font-weight: 700;
       padding: 6px 18px; border-radius: 20px; pointer-events: none;
-      letter-spacing: 0.5px; z-index: 5; white-space: nowrap;
+      letter-spacing: 0.3px; z-index: 5; white-space: nowrap;
     }
 
     /* ── Individual table ── */
@@ -239,74 +232,71 @@
       align-items: center; cursor: pointer; user-select: none;
       z-index: 2; touch-action: none;
     }
-    .floor-mesa.is-dragging { z-index: 100; cursor: grabbing !important; opacity: 0.92; }
+    .floor-mesa.is-dragging { z-index: 100; cursor: grabbing !important; opacity: 0.85; }
     .mesas-canvas.edit-mode .floor-mesa { cursor: grab; }
 
-    /* 90×90 wrapper — table + chairs fit inside */
-    .mesa-wrap { position: relative; width: 90px; height: 90px; }
+    /* Wrapper 88×88 */
+    .mesa-wrap { position: relative; width: 88px; height: 88px; }
 
-    /* Chairs: small dots at N/E/S/W */
+    /* ── Chair bumps — mismo color que la mesa, crean el silueta integrada ── */
     .mesa-chair {
-      position: absolute; width: 16px; height: 16px; border-radius: 50%;
-      background: #4A3728;
-      border: 1.5px solid rgba(255,255,255,0.1);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+      position: absolute; width: 22px; height: 22px; border-radius: 50%;
+      /* color se sobreescribe por estado */
+      z-index: 1;
     }
-    .mesa-chair.n { top:  2px; left: 37px; }
-    .mesa-chair.e { top: 37px; right: 2px; }
-    .mesa-chair.s { bottom: 2px; left: 37px; }
-    .mesa-chair.w { top: 37px; left:  2px; }
+    .mesa-chair.n { top:  0;   left: 33px; }
+    .mesa-chair.e { top: 33px; right: 0; }
+    .mesa-chair.s { bottom: 0; left: 33px; }
+    .mesa-chair.w { top: 33px; left:  0; }
 
-    /* Main circle */
+    /* ── Table top circle ── */
     .mesa-circle {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 62px; height: 62px; border-radius: 50%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      transition: box-shadow 0.25s;
+      width: 58px; height: 58px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2; transition: transform 0.18s;
     }
+    .floor-mesa:hover:not(.is-dragging) .mesa-circle { transform: translate(-50%,-50%) scale(1.06); }
+
+    /* Libre — gris suave */
+    .floor-mesa.libre .mesa-chair  { background: #BFC6D1; }
     .floor-mesa.libre .mesa-circle {
-      background: #F0F4F8;
-      border: 2px solid #D0DCE8;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8);
+      background: #C8CFD9;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
-    .floor-mesa.libre:hover .mesa-circle {
-      box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,255,255,0.25), inset 0 1px 0 rgba(255,255,255,0.8);
-    }
+    .floor-mesa.libre:hover .mesa-circle  { background: #B8C0CC; }
+
+    /* Ocupada — amber */
+    .floor-mesa.ocupada .mesa-chair  { background: #F59E0B; }
     .floor-mesa.ocupada .mesa-circle {
       background: #D97706;
-      border: 2px solid #F59E0B;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 18px rgba(217,119,6,0.5);
+      box-shadow: 0 2px 10px rgba(217,119,6,0.35);
     }
-    .floor-mesa.ocupada:hover .mesa-circle {
-      box-shadow: 0 6px 22px rgba(0,0,0,0.4), 0 0 28px rgba(217,119,6,0.7);
-    }
+    .floor-mesa.ocupada:hover .mesa-circle { background: #B45309; }
 
     .mesa-floor-num {
       font-family: 'Syne', sans-serif;
-      font-size: 18px; font-weight: 800; line-height: 1;
+      font-size: 20px; font-weight: 800; line-height: 1;
     }
-    .floor-mesa.libre   .mesa-floor-num { color: #1A3D63; }
+    .floor-mesa.libre   .mesa-floor-num { color: #4A5568; }
     .floor-mesa.ocupada .mesa-floor-num { color: #fff; }
 
     .mesa-floor-label {
-      margin-top: 7px; font-size: 9px; font-weight: 700;
-      letter-spacing: 0.5px; text-align: center;
-      white-space: nowrap; text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
+      margin-top: 8px; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.4px; text-align: center;
+      white-space: nowrap; color: #8A9BB0;
     }
-    .floor-mesa.ocupada .mesa-floor-label { color: rgba(255,255,255,0.7); }
+    .floor-mesa.ocupada .mesa-floor-label { color: #D97706; }
 
     /* Delete btn — edit mode only */
     .mesa-floor-del {
-      position: absolute; top: -4px; right: -4px;
+      position: absolute; top: -2px; right: -2px;
       width: 20px; height: 20px; border-radius: 50%;
-      background: #EF4444; border: 2px solid #1A1F2E;
+      background: #EF4444; border: 2px solid #F2F4F7;
       color: white; font-size: 13px; line-height: 1; font-weight: 900;
       display: none; align-items: center; justify-content: center;
       cursor: pointer; z-index: 10;
-      box-shadow: 0 2px 6px rgba(239,68,68,0.6);
     }
     .mesas-canvas.edit-mode .mesa-floor-del { display: flex; }
 
