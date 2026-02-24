@@ -169,104 +169,68 @@
     .btn-block { width: 100%; }
 
     /* ══════════════════════════════════════════
-       MESAS FLOOR PLAN — Luxury Hospitality
+       MESAS FLOOR PLAN
     ══════════════════════════════════════════ */
     #view-mesas { padding: 0 !important; display: flex !important; flex-direction: column; }
 
-    /* Toolbar — dark, refined */
     .floor-toolbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; height: 48px; flex-shrink: 0;
-      background: linear-gradient(135deg, #090C14 0%, #0F1420 100%);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      gap: 12px;
+      padding: 0 20px; height: 46px; flex-shrink: 0;
+      background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.07); gap: 12px;
     }
-    .floor-legend { display: flex; gap: 18px; align-items: center; }
-    .legend-item  { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.5px; text-transform: uppercase; }
-    .legend-pip { width: 10px; height: 10px; border-radius: 50%; }
-    .legend-pip.libre   { background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); }
-    .legend-pip.ocupada { background: var(--amber); box-shadow: 0 0 8px rgba(217,119,6,0.7); }
-
+    .floor-legend { display: flex; gap: 16px; align-items: center; }
+    .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); }
+    .legend-pip   { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-pip.libre   { background: rgba(255,255,255,0.75); }
+    .legend-pip.ocupada { background: var(--amber); box-shadow: 0 0 7px rgba(217,119,6,0.8); }
     .floor-toolbar-right { display: flex; align-items: center; gap: 8px; }
     .btn-edit-mode {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.5); border-radius: 9px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.55); border-radius: 9px;
       padding: 7px 14px; font-family: 'Lato', sans-serif;
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      transition: all 0.18s; white-space: nowrap;
+      font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
     }
-    .btn-edit-mode:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.75); }
-    .btn-edit-mode.active {
-      background: rgba(217,119,6,0.18); border-color: rgba(217,119,6,0.5);
-      color: #FCD34D; box-shadow: 0 0 14px rgba(217,119,6,0.2);
-    }
+    .btn-edit-mode:hover  { background: rgba(255,255,255,0.12); color: white; }
+    .btn-edit-mode.active { background: rgba(217,119,6,0.2); border-color: rgba(217,119,6,0.5); color: #FCD34D; }
     .btn-floor-add {
       background: linear-gradient(135deg, var(--amber), #B45309);
       color: white; border: none; border-radius: 9px;
       padding: 8px 16px; font-family: 'Lato', sans-serif;
       font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: all 0.18s; box-shadow: 0 3px 12px rgba(217,119,6,0.4);
+      box-shadow: 0 3px 10px rgba(217,119,6,0.4); transition: all 0.15s;
     }
-    .btn-floor-add:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(217,119,6,0.55); }
+    .btn-floor-add:hover { box-shadow: 0 5px 16px rgba(217,119,6,0.6); }
 
-    /* ── Canvas: dark wood floor ── */
+    /* Canvas */
     .mesas-canvas {
       flex: 1; position: relative; overflow: hidden;
-      background-color: #0B0D15;
-      /* Wood planks — vertical lines */
+      background: #1A1F2E;
       background-image:
-        repeating-linear-gradient(
-          90deg,
-          transparent 0px, transparent 119px,
-          rgba(0,0,0,0.28) 119px, rgba(0,0,0,0.28) 120px
-        ),
-        repeating-linear-gradient(
-          0deg,
-          transparent 0px, transparent 59px,
-          rgba(255,255,255,0.012) 59px, rgba(255,255,255,0.012) 60px
-        );
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
     }
-    /* Ambient ceiling lights */
-    .mesas-canvas::before {
-      content: '';
-      position: absolute; inset: 0; pointer-events: none; z-index: 0;
-      background:
-        radial-gradient(ellipse 35% 30% at 22% 28%, rgba(255,195,80,0.07) 0%, transparent 100%),
-        radial-gradient(ellipse 30% 25% at 72% 22%, rgba(255,195,80,0.06) 0%, transparent 100%),
-        radial-gradient(ellipse 28% 26% at 50% 68%, rgba(255,195,80,0.05) 0%, transparent 100%),
-        radial-gradient(ellipse 22% 20% at 84% 72%, rgba(255,195,80,0.04) 0%, transparent 100%);
-    }
-    /* Edit-mode grid overlay */
-    .mesas-canvas.edit-mode::after {
-      content: '';
-      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    .mesas-canvas.edit-mode {
       background-image:
-        linear-gradient(rgba(217,119,6,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(217,119,6,0.06) 1px, transparent 1px);
-      background-size: 40px 40px;
+        linear-gradient(rgba(217,119,6,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(217,119,6,0.08) 1px, transparent 1px);
+      background-size: 48px 48px;
     }
-
     .floor-plant {
-      position: absolute; font-size: 38px; pointer-events: none;
-      opacity: 0.8; user-select: none; z-index: 1;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7)) saturate(0.85);
+      position: absolute; font-size: 36px; pointer-events: none;
+      opacity: 0.7; user-select: none; z-index: 1;
     }
     .floor-empty {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
       text-align: center; color: rgba(255,255,255,0.2); font-size: 14px; z-index: 1;
     }
-    /* Edit mode hint */
     .floor-edit-hint {
-      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-      background: rgba(217,119,6,0.15); border: 1px solid rgba(217,119,6,0.35);
+      position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(217,119,6,0.15); border: 1px solid rgba(217,119,6,0.4);
       color: #FCD34D; font-size: 11px; font-weight: 700;
-      padding: 7px 18px; border-radius: 20px; pointer-events: none;
-      letter-spacing: 0.5px; z-index: 5;
-      animation: hint-pulse 2s ease-in-out infinite;
-    }
-    @keyframes hint-pulse {
-      0%,100% { opacity: 0.7; } 50% { opacity: 1; }
+      padding: 6px 18px; border-radius: 20px; pointer-events: none;
+      letter-spacing: 0.5px; z-index: 5; white-space: nowrap;
     }
 
     /* ── Individual table ── */
@@ -275,118 +239,75 @@
       align-items: center; cursor: pointer; user-select: none;
       z-index: 2; touch-action: none;
     }
-    .floor-mesa:not(.is-dragging) {
-      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s;
-    }
-    .floor-mesa.is-dragging {
-      z-index: 100; cursor: grabbing !important;
-      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));
-      transform: scale(1.12) !important;
-      transition: none !important;
-    }
+    .floor-mesa.is-dragging { z-index: 100; cursor: grabbing !important; opacity: 0.92; }
     .mesas-canvas.edit-mode .floor-mesa { cursor: grab; }
-    .floor-mesa:hover:not(.is-dragging) { transform: scale(1.06); }
 
-    /* Table outer container: 92px includes chairs */
-    .mesa-wrap { position: relative; width: 92px; height: 92px; }
+    /* 90×90 wrapper — table + chairs fit inside */
+    .mesa-wrap { position: relative; width: 90px; height: 90px; }
 
-    /* ── Chairs: warm leather cushions ── */
+    /* Chairs: small dots at N/E/S/W */
     .mesa-chair {
-      position: absolute; width: 20px; height: 20px; border-radius: 50%;
-      background: radial-gradient(circle at 40% 35%, #7A4A2C 0%, #3D2210 55%, #221408 100%);
-      border: 1.5px solid rgba(255,255,255,0.07);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+      position: absolute; width: 16px; height: 16px; border-radius: 50%;
+      background: #4A3728;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-    /* Positions: centered at each side of the 92px wrap */
-    .mesa-chair.n { top:  0;   left: 36px; }
-    .mesa-chair.e { top: 36px; right: 0; }
-    .mesa-chair.s { bottom: 0; left: 36px; }
-    .mesa-chair.w { top: 36px; left:  0; }
+    .mesa-chair.n { top:  2px; left: 37px; }
+    .mesa-chair.e { top: 37px; right: 2px; }
+    .mesa-chair.s { bottom: 2px; left: 37px; }
+    .mesa-chair.w { top: 37px; left:  2px; }
 
-    /* ── Table circle: polished wood ── */
+    /* Main circle */
     .mesa-circle {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 60px; height: 60px; border-radius: 50%;
+      width: 62px; height: 62px; border-radius: 50%;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      transition: transform 0.2s, box-shadow 0.3s;
+      transition: box-shadow 0.25s;
     }
-    /* Wood top surface */
-    .mesa-circle::before {
-      content: '';
-      position: absolute; inset: 0; border-radius: 50%;
-      background: radial-gradient(circle at 38% 32%, #6B4226 0%, #3D2410 45%, #1E1008 100%);
-      border: 2.5px solid #0D0802;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.05),
-        0 6px 22px rgba(0,0,0,0.7),
-        inset 0 1px 0 rgba(255,200,100,0.1),
-        inset 0 -1px 0 rgba(0,0,0,0.4);
+    .floor-mesa.libre .mesa-circle {
+      background: #F0F4F8;
+      border: 2px solid #D0DCE8;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8);
     }
-    /* Content stays above ::before */
-    .mesa-circle > * { position: relative; z-index: 1; }
+    .floor-mesa.libre:hover .mesa-circle {
+      box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,255,255,0.25), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+    .floor-mesa.ocupada .mesa-circle {
+      background: #D97706;
+      border: 2px solid #F59E0B;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 18px rgba(217,119,6,0.5);
+    }
+    .floor-mesa.ocupada:hover .mesa-circle {
+      box-shadow: 0 6px 22px rgba(0,0,0,0.4), 0 0 28px rgba(217,119,6,0.7);
+    }
 
-    /* Libre: subtle rim highlight only */
-    .floor-mesa.libre .mesa-circle::before {
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.05),
-        0 6px 22px rgba(0,0,0,0.7),
-        inset 0 1px 0 rgba(255,200,100,0.08);
-    }
-    /* Ocupada: amber glow + warmer wood */
-    .floor-mesa.ocupada .mesa-circle::before {
-      background: radial-gradient(circle at 38% 32%, #8B5A2E 0%, #5A3218 45%, #2A1A08 100%);
-      box-shadow:
-        0 0 0 2px rgba(217,119,6,0.5),
-        0 0 24px rgba(217,119,6,0.4),
-        0 6px 22px rgba(0,0,0,0.6),
-        inset 0 1px 0 rgba(255,200,80,0.18);
-    }
-    @keyframes amber-pulse {
-      0%,100% { box-shadow: 0 0 0 2px rgba(217,119,6,0.5), 0 0 22px rgba(217,119,6,0.35), 0 6px 22px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,80,0.18); }
-      50%      { box-shadow: 0 0 0 2px rgba(217,119,6,0.7), 0 0 36px rgba(217,119,6,0.55), 0 6px 22px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,80,0.22); }
-    }
-    .floor-mesa.ocupada .mesa-circle::before { animation: amber-pulse 2.8s ease-in-out infinite; }
-
-    /* Table number */
     .mesa-floor-num {
       font-family: 'Syne', sans-serif;
-      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.92);
-      line-height: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      font-size: 18px; font-weight: 800; line-height: 1;
     }
-    /* Status dot */
-    .mesa-floor-dot {
-      width: 5px; height: 5px; border-radius: 50%; margin-top: 5px;
-    }
-    .floor-mesa.libre   .mesa-floor-dot { background: rgba(255,255,255,0.3); }
-    .floor-mesa.ocupada .mesa-floor-dot { background: #FCD34D; box-shadow: 0 0 6px rgba(252,211,77,0.9); }
+    .floor-mesa.libre   .mesa-floor-num { color: #1A3D63; }
+    .floor-mesa.ocupada .mesa-floor-num { color: #fff; }
 
-    /* Label below table */
     .mesa-floor-label {
-      margin-top: 8px;
-      font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
-      text-align: center; white-space: nowrap; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 10px;
+      margin-top: 7px; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.5px; text-align: center;
+      white-space: nowrap; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
     }
-    .floor-mesa.libre   .mesa-floor-label { color: rgba(255,255,255,0.3); background: transparent; }
-    .floor-mesa.ocupada .mesa-floor-label {
-      color: #FCD34D; background: rgba(217,119,6,0.2);
-      border: 1px solid rgba(217,119,6,0.3);
-    }
+    .floor-mesa.ocupada .mesa-floor-label { color: rgba(255,255,255,0.7); }
 
-    /* Delete button — only in edit mode */
+    /* Delete btn — edit mode only */
     .mesa-floor-del {
       position: absolute; top: -4px; right: -4px;
       width: 20px; height: 20px; border-radius: 50%;
-      background: #EF4444; border: 2px solid #0B0D15;
-      color: white; font-size: 12px; line-height: 1;
+      background: #EF4444; border: 2px solid #1A1F2E;
+      color: white; font-size: 13px; line-height: 1; font-weight: 900;
       display: none; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 10; font-weight: 900;
-      box-shadow: 0 2px 8px rgba(239,68,68,0.7);
-      transition: transform 0.15s;
+      cursor: pointer; z-index: 10;
+      box-shadow: 0 2px 6px rgba(239,68,68,0.6);
     }
-    .mesa-floor-del:hover { transform: scale(1.2); }
     .mesas-canvas.edit-mode .mesa-floor-del { display: flex; }
 
     /* ══ DOMICILIOS VIEW ══ */
@@ -1496,71 +1417,82 @@ function toggleEditMode() {
   }
 }
 
-/* ── Drag & drop: usa transform durante drag, actualiza left/top al soltar ── */
+/* ── Drag & drop: mueve left/top en tiempo real con el cursor ── */
 function initMesaDrag(el, mesaId) {
   let dragging = false;
-  let startClientX, startClientY;
-  let originPxLeft, originPxTop;
-  let currentDx = 0, currentDy = 0;
+  let offsetX  = 0; // cursor offset dentro del elemento
+  let offsetY  = 0;
 
-  function getClient(e) { return e.touches ? e.touches[0] : e; }
+  function client(e) { return e.touches ? e.touches[0] : e; }
 
   function onDown(e) {
     if (!EDIT_MODE) return;
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     dragging = true;
     el.classList.add('is-dragging');
 
     const canvas = document.getElementById('mesasCanvas');
-    const rect   = canvas.getBoundingClientRect();
-    const c      = getClient(e);
-    startClientX = c.clientX;
-    startClientY = c.clientY;
-    originPxLeft = (parseFloat(el.style.left) / 100) * rect.width;
-    originPxTop  = (parseFloat(el.style.top)  / 100) * rect.height;
-    currentDx = 0; currentDy = 0;
+    const cRect  = canvas.getBoundingClientRect();
+    const eRect  = el.getBoundingClientRect();
+    const c      = client(e);
+
+    // Offset: dónde está el cursor dentro del elemento
+    offsetX = c.clientX - eRect.left;
+    offsetY = c.clientY - eRect.top;
+
+    // Convertir posición actual a px para trabajar en px
+    el.style.left = (eRect.left - cRect.left) + 'px';
+    el.style.top  = (eRect.top  - cRect.top)  + 'px';
   }
 
   function onMove(e) {
     if (!dragging) return;
     e.preventDefault();
-    const c  = getClient(e);
-    currentDx = c.clientX - startClientX;
-    currentDy = c.clientY - startClientY;
 
-    // Move via transform — avoids layout recalc, buttery smooth
-    el.style.transform = `translate(${currentDx}px, ${currentDy}px) scale(1.12)`;
+    const canvas = document.getElementById('mesasCanvas');
+    const cRect  = canvas.getBoundingClientRect();
+    const c      = client(e);
 
-    if (Math.abs(currentDx) > 5 || Math.abs(currentDy) > 5) el.classList.add('did-drag');
+    const EW = el.offsetWidth  || 90;
+    const EH = el.offsetHeight || 110;
+
+    let newLeft = c.clientX - cRect.left - offsetX;
+    let newTop  = c.clientY - cRect.top  - offsetY;
+
+    // Límites del canvas
+    newLeft = Math.max(0, Math.min(newLeft, cRect.width  - EW));
+    newTop  = Math.max(0, Math.min(newTop,  cRect.height - EH));
+
+    el.style.left = newLeft + 'px';
+    el.style.top  = newTop  + 'px';
+
+    el.classList.add('did-drag');
   }
 
   function onUp() {
     if (!dragging) return;
     dragging = false;
     el.classList.remove('is-dragging');
-    el.style.transform = '';
 
-    // Commit position: convert pixel delta to new percentage
+    // Convertir px a % y guardar
     const canvas = document.getElementById('mesasCanvas');
-    const rect   = canvas.getBoundingClientRect();
-    const W = rect.width, H = rect.height;
-    const EW = 92, EH = 110; // element approx size
+    const cRect  = canvas.getBoundingClientRect();
+    const pctL   = (parseFloat(el.style.left) / cRect.width  * 100).toFixed(2);
+    const pctT   = (parseFloat(el.style.top)  / cRect.height * 100).toFixed(2);
 
-    const newPxLeft = Math.max(0, Math.min(originPxLeft + currentDx, W - EW));
-    const newPxTop  = Math.max(0, Math.min(originPxTop  + currentDy, H - EH));
+    el.style.left = pctL + '%';
+    el.style.top  = pctT + '%';
 
-    el.style.left = (newPxLeft / W * 100).toFixed(2) + '%';
-    el.style.top  = (newPxTop  / H * 100).toFixed(2) + '%';
-
-    saveMesaPos(mesaId, parseFloat(el.style.left), parseFloat(el.style.top));
+    saveMesaPos(mesaId, parseFloat(pctL), parseFloat(pctT));
   }
 
   el.addEventListener('mousedown',  onDown, { capture: true });
   el.addEventListener('touchstart', onDown, { passive: false, capture: true });
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('mouseup',  onUp);
-  document.addEventListener('touchend', onUp);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup',  onUp);
+  window.addEventListener('touchend', onUp);
 }
 
 async function crearMesa() {
