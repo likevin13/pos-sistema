@@ -168,123 +168,226 @@
     }
     .btn-block { width: 100%; }
 
-    /* ══ MESAS FLOOR PLAN ══ */
-    #view-mesas { padding: 0; display: flex; flex-direction: column; }
+    /* ══════════════════════════════════════════
+       MESAS FLOOR PLAN — Luxury Hospitality
+    ══════════════════════════════════════════ */
+    #view-mesas { padding: 0 !important; display: flex !important; flex-direction: column; }
 
+    /* Toolbar — dark, refined */
     .floor-toolbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 20px; background: var(--white);
-      border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 12px;
+      padding: 0 20px; height: 48px; flex-shrink: 0;
+      background: linear-gradient(135deg, #090C14 0%, #0F1420 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 12px;
     }
-    .floor-legend { display: flex; gap: 16px; align-items: center; }
-    .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--muted); }
-    .legend-dot   { width: 11px; height: 11px; border-radius: 50%; }
-    .legend-dot.libre   { background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.3); }
-    .legend-dot.ocupada { background: var(--amber); box-shadow: 0 0 6px rgba(217,119,6,0.6); }
-    .btn-edit-mode {
-      background: rgba(10,25,49,0.07); border: 1px solid var(--border);
-      color: var(--muted); border-radius: 9px;
-      padding: 7px 14px; font-family: 'Lato', sans-serif;
-      font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
-    }
-    .btn-edit-mode.active { background: rgba(217,119,6,0.12); border-color: var(--amber); color: var(--amber); }
+    .floor-legend { display: flex; gap: 18px; align-items: center; }
+    .legend-item  { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.5px; text-transform: uppercase; }
+    .legend-pip { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-pip.libre   { background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.35); }
+    .legend-pip.ocupada { background: var(--amber); box-shadow: 0 0 8px rgba(217,119,6,0.7); }
 
-    /* Canvas */
+    .floor-toolbar-right { display: flex; align-items: center; gap: 8px; }
+    .btn-edit-mode {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5); border-radius: 9px;
+      padding: 7px 14px; font-family: 'Lato', sans-serif;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .btn-edit-mode:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.75); }
+    .btn-edit-mode.active {
+      background: rgba(217,119,6,0.18); border-color: rgba(217,119,6,0.5);
+      color: #FCD34D; box-shadow: 0 0 14px rgba(217,119,6,0.2);
+    }
+    .btn-floor-add {
+      background: linear-gradient(135deg, var(--amber), #B45309);
+      color: white; border: none; border-radius: 9px;
+      padding: 8px 16px; font-family: 'Lato', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; box-shadow: 0 3px 12px rgba(217,119,6,0.4);
+    }
+    .btn-floor-add:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(217,119,6,0.55); }
+
+    /* ── Canvas: dark wood floor ── */
     .mesas-canvas {
       flex: 1; position: relative; overflow: hidden;
-      background: #1B2235;
+      background-color: #0B0D15;
+      /* Wood planks — vertical lines */
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 50px 50px;
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px, transparent 119px,
+          rgba(0,0,0,0.28) 119px, rgba(0,0,0,0.28) 120px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          transparent 0px, transparent 59px,
+          rgba(255,255,255,0.012) 59px, rgba(255,255,255,0.012) 60px
+        );
     }
+    /* Ambient ceiling lights */
+    .mesas-canvas::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 35% 30% at 22% 28%, rgba(255,195,80,0.07) 0%, transparent 100%),
+        radial-gradient(ellipse 30% 25% at 72% 22%, rgba(255,195,80,0.06) 0%, transparent 100%),
+        radial-gradient(ellipse 28% 26% at 50% 68%, rgba(255,195,80,0.05) 0%, transparent 100%),
+        radial-gradient(ellipse 22% 20% at 84% 72%, rgba(255,195,80,0.04) 0%, transparent 100%);
+    }
+    /* Edit-mode grid overlay */
+    .mesas-canvas.edit-mode::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(217,119,6,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(217,119,6,0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
     .floor-plant {
-      position: absolute; font-size: 34px; pointer-events: none;
-      opacity: 0.75; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
-      user-select: none;
+      position: absolute; font-size: 38px; pointer-events: none;
+      opacity: 0.8; user-select: none; z-index: 1;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7)) saturate(0.85);
     }
     .floor-empty {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      text-align: center; color: rgba(255,255,255,0.25); font-size: 14px;
+      text-align: center; color: rgba(255,255,255,0.2); font-size: 14px; z-index: 1;
+    }
+    /* Edit mode hint */
+    .floor-edit-hint {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(217,119,6,0.15); border: 1px solid rgba(217,119,6,0.35);
+      color: #FCD34D; font-size: 11px; font-weight: 700;
+      padding: 7px 18px; border-radius: 20px; pointer-events: none;
+      letter-spacing: 0.5px; z-index: 5;
+      animation: hint-pulse 2s ease-in-out infinite;
+    }
+    @keyframes hint-pulse {
+      0%,100% { opacity: 0.7; } 50% { opacity: 1; }
     }
 
-    /* Individual table */
+    /* ── Individual table ── */
     .floor-mesa {
       position: absolute; display: flex; flex-direction: column;
       align-items: center; cursor: pointer; user-select: none;
-      transition: filter 0.2s;
+      z-index: 2; touch-action: none;
     }
-    .floor-mesa.is-dragging { z-index: 100; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7)); cursor: grabbing; }
+    .floor-mesa:not(.is-dragging) {
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s;
+    }
+    .floor-mesa.is-dragging {
+      z-index: 100; cursor: grabbing !important;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9));
+      transform: scale(1.12) !important;
+      transition: none !important;
+    }
+    .mesas-canvas.edit-mode .floor-mesa { cursor: grab; }
+    .floor-mesa:hover:not(.is-dragging) { transform: scale(1.06); }
 
-    /* Table wrap: 88px box that contains circle + chairs */
-    .mesa-wrap { position: relative; width: 88px; height: 88px; }
+    /* Table outer container: 92px includes chairs */
+    .mesa-wrap { position: relative; width: 92px; height: 92px; }
 
-    /* Chairs (4 brown dots at N/E/S/W) */
+    /* ── Chairs: warm leather cushions ── */
     .mesa-chair {
-      position: absolute; width: 18px; height: 18px;
-      border-radius: 50%; background: #6B3F2A;
-      border: 1.5px solid rgba(255,255,255,0.08);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      position: absolute; width: 20px; height: 20px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #7A4A2C 0%, #3D2210 55%, #221408 100%);
+      border: 1.5px solid rgba(255,255,255,0.07);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
     }
-    .mesa-chair.n { top:  1px; left: 35px; }
-    .mesa-chair.e { top: 35px; right: 1px; }
-    .mesa-chair.s { bottom: 1px; left: 35px; }
-    .mesa-chair.w { top: 35px; left:  1px; }
+    /* Positions: centered at each side of the 92px wrap */
+    .mesa-chair.n { top:  0;   left: 36px; }
+    .mesa-chair.e { top: 36px; right: 0; }
+    .mesa-chair.s { bottom: 0; left: 36px; }
+    .mesa-chair.w { top: 36px; left:  0; }
 
-    /* Main circle */
+    /* ── Table circle: polished wood ── */
     .mesa-circle {
       position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      width: 56px; height: 56px; border-radius: 50%;
-      background: #252B42;
-      border: 2px solid rgba(255,255,255,0.1);
+      transform: translate(-50%, -50%);
+      width: 60px; height: 60px; border-radius: 50%;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      transition: all 0.2s;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: transform 0.2s, box-shadow 0.3s;
     }
-    .floor-mesa.libre .mesa-circle {
-      border-color: rgba(255,255,255,0.12);
+    /* Wood top surface */
+    .mesa-circle::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%, #6B4226 0%, #3D2410 45%, #1E1008 100%);
+      border: 2.5px solid #0D0802;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 6px 22px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,200,100,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.4);
     }
-    .floor-mesa.ocupada .mesa-circle {
-      background: rgba(217,119,6,0.18);
-      border-color: var(--amber);
-      box-shadow: 0 0 22px rgba(217,119,6,0.35), 0 4px 18px rgba(0,0,0,0.5);
-    }
-    .floor-mesa:hover:not(.is-dragging) .mesa-circle {
-      transform: translate(-50%,-50%) scale(1.1);
-    }
+    /* Content stays above ::before */
+    .mesa-circle > * { position: relative; z-index: 1; }
 
+    /* Libre: subtle rim highlight only */
+    .floor-mesa.libre .mesa-circle::before {
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 6px 22px rgba(0,0,0,0.7),
+        inset 0 1px 0 rgba(255,200,100,0.08);
+    }
+    /* Ocupada: amber glow + warmer wood */
+    .floor-mesa.ocupada .mesa-circle::before {
+      background: radial-gradient(circle at 38% 32%, #8B5A2E 0%, #5A3218 45%, #2A1A08 100%);
+      box-shadow:
+        0 0 0 2px rgba(217,119,6,0.5),
+        0 0 24px rgba(217,119,6,0.4),
+        0 6px 22px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,200,80,0.18);
+    }
+    @keyframes amber-pulse {
+      0%,100% { box-shadow: 0 0 0 2px rgba(217,119,6,0.5), 0 0 22px rgba(217,119,6,0.35), 0 6px 22px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,80,0.18); }
+      50%      { box-shadow: 0 0 0 2px rgba(217,119,6,0.7), 0 0 36px rgba(217,119,6,0.55), 0 6px 22px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,200,80,0.22); }
+    }
+    .floor-mesa.ocupada .mesa-circle::before { animation: amber-pulse 2.8s ease-in-out infinite; }
+
+    /* Table number */
     .mesa-floor-num {
       font-family: 'Syne', sans-serif;
-      font-size: 14px; font-weight: 800; color: white; line-height: 1;
+      font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.92);
+      line-height: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
+    /* Status dot */
     .mesa-floor-dot {
-      width: 6px; height: 6px; border-radius: 50%; margin-top: 4px;
+      width: 5px; height: 5px; border-radius: 50%; margin-top: 5px;
     }
-    .floor-mesa.libre   .mesa-floor-dot { background: rgba(255,255,255,0.25); }
-    .floor-mesa.ocupada .mesa-floor-dot { background: var(--amber-mid); box-shadow: 0 0 5px rgba(245,158,11,0.8); }
+    .floor-mesa.libre   .mesa-floor-dot { background: rgba(255,255,255,0.3); }
+    .floor-mesa.ocupada .mesa-floor-dot { background: #FCD34D; box-shadow: 0 0 6px rgba(252,211,77,0.9); }
 
+    /* Label below table */
     .mesa-floor-label {
-      margin-top: 7px;
-      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);
-      text-align: center; white-space: nowrap; letter-spacing: 0.3px;
+      margin-top: 8px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+      text-align: center; white-space: nowrap; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 10px;
     }
-    .floor-mesa.ocupada .mesa-floor-label { color: var(--amber-mid); }
+    .floor-mesa.libre   .mesa-floor-label { color: rgba(255,255,255,0.3); background: transparent; }
+    .floor-mesa.ocupada .mesa-floor-label {
+      color: #FCD34D; background: rgba(217,119,6,0.2);
+      border: 1px solid rgba(217,119,6,0.3);
+    }
 
-    /* Delete btn — only in edit mode */
+    /* Delete button — only in edit mode */
     .mesa-floor-del {
-      position: absolute; top: -5px; right: -5px;
+      position: absolute; top: -4px; right: -4px;
       width: 20px; height: 20px; border-radius: 50%;
-      background: var(--red); border: 2px solid #1B2235;
-      color: white; font-size: 11px; line-height: 1;
+      background: #EF4444; border: 2px solid #0B0D15;
+      color: white; font-size: 12px; line-height: 1;
       display: none; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 10;
-      box-shadow: 0 2px 6px rgba(239,68,68,0.6);
+      cursor: pointer; z-index: 10; font-weight: 900;
+      box-shadow: 0 2px 8px rgba(239,68,68,0.7);
+      transition: transform 0.15s;
     }
+    .mesa-floor-del:hover { transform: scale(1.2); }
     .mesas-canvas.edit-mode .mesa-floor-del { display: flex; }
-    .mesas-canvas.edit-mode .floor-mesa { cursor: grab; }
-    .mesas-canvas.edit-mode .floor-mesa.is-dragging { cursor: grabbing; }
 
     /* ══ DOMICILIOS VIEW ══ */
     .domicilio-list { display: flex; flex-direction: column; gap: 12px; }
@@ -878,21 +981,23 @@
     <!-- Toolbar -->
     <div class="floor-toolbar">
       <div class="floor-legend">
-        <div class="legend-item"><div class="legend-dot libre"></div> Libre</div>
-        <div class="legend-item"><div class="legend-dot ocupada"></div> Ocupada</div>
+        <div class="legend-item"><div class="legend-pip libre"></div>Libre</div>
+        <div class="legend-item"><div class="legend-pip ocupada"></div>Ocupada</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn-edit-mode" id="btnEditMode" onclick="toggleEditMode()">✏️ Mover</button>
-        <button class="btn-primary" onclick="crearMesa()">＋ Mesa</button>
+      <div class="floor-toolbar-right">
+        <button class="btn-edit-mode" id="btnEditMode" onclick="toggleEditMode()">
+          ✦ Mover mesas
+        </button>
+        <button class="btn-floor-add" onclick="crearMesa()">＋ Mesa</button>
       </div>
     </div>
     <!-- Floor canvas -->
     <div class="mesas-canvas" id="mesasCanvas">
       <!-- Plantas decorativas -->
-      <div class="floor-plant" style="top:2%;left:1.5%">🪴</div>
-      <div class="floor-plant" style="top:2%;right:1.5%">🌿</div>
-      <div class="floor-plant" style="bottom:5%;left:1.5%">🌱</div>
-      <div class="floor-plant" style="bottom:5%;right:1.5%">🪴</div>
+      <div class="floor-plant" style="top:1.5%;left:1%">🪴</div>
+      <div class="floor-plant" style="top:1.5%;right:1%">🌿</div>
+      <div class="floor-plant" style="bottom:4%;left:1%">🌱</div>
+      <div class="floor-plant" style="bottom:4%;right:1%">🪴</div>
       <!-- Mesas renderizadas por JS aquí -->
       <div id="mesasGrid"></div>
     </div>
@@ -1371,54 +1476,87 @@ async function cargarMesas() {
 let EDIT_MODE = false;
 function toggleEditMode() {
   EDIT_MODE = !EDIT_MODE;
-  document.getElementById('mesasCanvas').classList.toggle('edit-mode', EDIT_MODE);
-  const btn = document.getElementById('btnEditMode');
+  const canvas = document.getElementById('mesasCanvas');
+  const btn    = document.getElementById('btnEditMode');
+  canvas.classList.toggle('edit-mode', EDIT_MODE);
   btn.classList.toggle('active', EDIT_MODE);
-  btn.textContent = EDIT_MODE ? '✓ Listo' : '✏️ Mover';
+  btn.innerHTML = EDIT_MODE ? '✓ Guardar distribución' : '✦ Mover mesas';
+
+  // Hint banner
+  let hint = canvas.querySelector('.floor-edit-hint');
+  if (EDIT_MODE) {
+    if (!hint) {
+      hint = document.createElement('div');
+      hint.className = 'floor-edit-hint';
+      hint.textContent = '✦ Arrastra las mesas a la posición de tu restaurante';
+      canvas.appendChild(hint);
+    }
+  } else {
+    hint?.remove();
+  }
 }
 
-/* ── Drag & drop ── */
+/* ── Drag & drop: usa transform durante drag, actualiza left/top al soltar ── */
 function initMesaDrag(el, mesaId) {
-  let startX, startY, startLeft, startTop, dragging = false;
+  let dragging = false;
+  let startClientX, startClientY;
+  let originPxLeft, originPxTop;
+  let currentDx = 0, currentDy = 0;
+
+  function getClient(e) { return e.touches ? e.touches[0] : e; }
 
   function onDown(e) {
     if (!EDIT_MODE) return;
-    e.preventDefault();
+    e.preventDefault(); e.stopPropagation();
     dragging = true;
     el.classList.add('is-dragging');
-    const canvas  = document.getElementById('mesasCanvas');
-    const rect    = canvas.getBoundingClientRect();
-    const client  = e.touches ? e.touches[0] : e;
-    startX    = client.clientX;
-    startY    = client.clientY;
-    startLeft = (parseFloat(el.style.left) / 100) * rect.width;
-    startTop  = (parseFloat(el.style.top)  / 100) * rect.height;
+
+    const canvas = document.getElementById('mesasCanvas');
+    const rect   = canvas.getBoundingClientRect();
+    const c      = getClient(e);
+    startClientX = c.clientX;
+    startClientY = c.clientY;
+    originPxLeft = (parseFloat(el.style.left) / 100) * rect.width;
+    originPxTop  = (parseFloat(el.style.top)  / 100) * rect.height;
+    currentDx = 0; currentDy = 0;
   }
 
   function onMove(e) {
     if (!dragging) return;
     e.preventDefault();
-    const canvas = document.getElementById('mesasCanvas');
-    const rect   = canvas.getBoundingClientRect();
-    const client = e.touches ? e.touches[0] : e;
-    const dx = client.clientX - startX;
-    const dy = client.clientY - startY;
-    const newLeft = Math.max(0, Math.min(startLeft + dx, rect.width  - 90));
-    const newTop  = Math.max(0, Math.min(startTop  + dy, rect.height - 100));
-    el.style.left = (newLeft / rect.width  * 100) + '%';
-    el.style.top  = (newTop  / rect.height * 100) + '%';
-    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) el.classList.add('did-drag');
+    const c  = getClient(e);
+    currentDx = c.clientX - startClientX;
+    currentDy = c.clientY - startClientY;
+
+    // Move via transform — avoids layout recalc, buttery smooth
+    el.style.transform = `translate(${currentDx}px, ${currentDy}px) scale(1.12)`;
+
+    if (Math.abs(currentDx) > 5 || Math.abs(currentDy) > 5) el.classList.add('did-drag');
   }
 
   function onUp() {
     if (!dragging) return;
     dragging = false;
     el.classList.remove('is-dragging');
+    el.style.transform = '';
+
+    // Commit position: convert pixel delta to new percentage
+    const canvas = document.getElementById('mesasCanvas');
+    const rect   = canvas.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    const EW = 92, EH = 110; // element approx size
+
+    const newPxLeft = Math.max(0, Math.min(originPxLeft + currentDx, W - EW));
+    const newPxTop  = Math.max(0, Math.min(originPxTop  + currentDy, H - EH));
+
+    el.style.left = (newPxLeft / W * 100).toFixed(2) + '%';
+    el.style.top  = (newPxTop  / H * 100).toFixed(2) + '%';
+
     saveMesaPos(mesaId, parseFloat(el.style.left), parseFloat(el.style.top));
   }
 
-  el.addEventListener('mousedown',  onDown);
-  el.addEventListener('touchstart', onDown, { passive: false });
+  el.addEventListener('mousedown',  onDown, { capture: true });
+  el.addEventListener('touchstart', onDown, { passive: false, capture: true });
   document.addEventListener('mousemove', onMove);
   document.addEventListener('touchmove', onMove, { passive: false });
   document.addEventListener('mouseup',  onUp);
