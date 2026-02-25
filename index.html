@@ -1842,6 +1842,7 @@ let _selectedMesas    = new Set();
 let _salonDesignMode  = false;
 let _salonTool        = 'pared';   // 'pared' | 'entrada' | 'borrar'
 let _drawState        = null;      // { x1, y1 } during wall draw
+let _dragElemActive   = false;     // true while dragging a floor element
 
 function saveRestMesas()      { ls.setItem(K + 'rest_mesas',      JSON.stringify(REST_MESAS)); }
 function saveRestComandas()   { ls.setItem(K + 'rest_comandas',   JSON.stringify(REST_COMANDAS)); }
@@ -1902,99 +1903,137 @@ function renderElements() {
   svg.querySelectorAll('.floor-el').forEach(el => el.remove());
   const NS = 'http://www.w3.org/2000/svg';
   const canEdit = _salonDesignMode;
+  const EW = 100, EH = 52;
 
   REST_ELEMENTOS.forEach(el => {
     if (el.type === 'pared') {
+      /* ── wall: <g translate> wrapping a <rect> ── */
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'floor-el floor-pared');
+      g.setAttribute('data-elid', el.id);
+      g.setAttribute('transform', `translate(${el.x},${el.y})`);
       const rect = document.createElementNS(NS, 'rect');
-      rect.setAttribute('class', 'floor-el floor-pared');
-      rect.setAttribute('x', el.x);     rect.setAttribute('y', el.y);
+      rect.setAttribute('x', '0'); rect.setAttribute('y', '0');
       rect.setAttribute('width', el.w); rect.setAttribute('height', el.h);
       rect.setAttribute('fill', '#5c6070');
       rect.setAttribute('stroke', '#3a3d50');
       rect.setAttribute('stroke-width', '1');
       rect.setAttribute('rx', '3');
+      g.appendChild(rect);
       if (canEdit) {
-        rect.style.pointerEvents = 'all';
+        g.setAttribute('pointer-events', 'all');
         if (_salonTool === 'borrar') {
-          rect.style.cursor = 'pointer';
-          rect.addEventListener('click', ev => {
-            ev.stopPropagation();
-            REST_ELEMENTOS = REST_ELEMENTOS.filter(x => x.id !== el.id);
-            saveRestElementos(); renderElements();
-          });
+          g.style.cursor = 'pointer';
+          g.addEventListener('click', ev => { ev.stopPropagation(); deleteElem(el.id); });
+        } else {
+          g.style.cursor = 'grab';
+          g.addEventListener('mousedown', ev => startElemDrag(ev, el.id));
         }
       }
-      svg.appendChild(rect);
+      svg.appendChild(g);
 
     } else if (el.type === 'entrada') {
-      const EW = 100, EH = 52;  // entrance element size
+      /* ── entrance: all coords local (0,0), translate+rotate the group ── */
       const g = document.createElementNS(NS, 'g');
       g.setAttribute('class', 'floor-el floor-entrada');
-      const angle = el.angle || 0;
-      const cx = el.x + EW / 2, cy = el.y + EH / 2;
-      g.setAttribute('transform', `rotate(${angle},${cx},${cy})`);
+      g.setAttribute('data-elid', el.id);
+      g.setAttribute('transform', `translate(${el.x},${el.y}) rotate(${el.angle||0},${EW/2},${EH/2})`);
 
-      // Three downward arrows
       const arrows = document.createElementNS(NS, 'text');
-      arrows.setAttribute('x', el.x + EW / 2); arrows.setAttribute('y', el.y + 16);
-      arrows.setAttribute('text-anchor', 'middle');
-      arrows.setAttribute('font-size', '14');
-      arrows.setAttribute('fill', '#e06010');
-      arrows.setAttribute('font-family', 'sans-serif');
+      arrows.setAttribute('x', EW / 2); arrows.setAttribute('y', '16');
+      arrows.setAttribute('text-anchor', 'middle'); arrows.setAttribute('font-size', '14');
+      arrows.setAttribute('fill', '#e06010'); arrows.setAttribute('font-family', 'sans-serif');
+      arrows.setAttribute('pointer-events', 'none');
       arrows.textContent = '▼  ▼  ▼';
 
-      // Label box
       const box = document.createElementNS(NS, 'rect');
-      box.setAttribute('x', el.x); box.setAttribute('y', el.y + 20);
-      box.setAttribute('width', EW); box.setAttribute('height', 28);
+      box.setAttribute('x', '0'); box.setAttribute('y', '20');
+      box.setAttribute('width', EW); box.setAttribute('height', '28');
       box.setAttribute('fill', 'rgba(255,200,120,0.18)');
-      box.setAttribute('stroke', '#e06010');
-      box.setAttribute('stroke-width', '2');
-      box.setAttribute('rx', '7');
+      box.setAttribute('stroke', '#e06010'); box.setAttribute('stroke-width', '2'); box.setAttribute('rx', '7');
 
-      // ENTRADA text
       const label = document.createElementNS(NS, 'text');
-      label.setAttribute('x', el.x + EW / 2); label.setAttribute('y', el.y + 39);
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('font-size', '11');
-      label.setAttribute('font-weight', '700');
-      label.setAttribute('fill', '#e06010');
-      label.setAttribute('font-family', 'Lato, sans-serif');
-      label.setAttribute('letter-spacing', '1.5');
+      label.setAttribute('x', EW / 2); label.setAttribute('y', '39');
+      label.setAttribute('text-anchor', 'middle'); label.setAttribute('font-size', '11');
+      label.setAttribute('font-weight', '700'); label.setAttribute('fill', '#e06010');
+      label.setAttribute('font-family', 'Lato,sans-serif'); label.setAttribute('letter-spacing', '1.5');
+      label.setAttribute('pointer-events', 'none');
       label.textContent = 'ENTRADA';
 
-      // Transparent hit area
       const hit = document.createElementNS(NS, 'rect');
-      hit.setAttribute('x', el.x); hit.setAttribute('y', el.y);
+      hit.setAttribute('x', '0'); hit.setAttribute('y', '0');
       hit.setAttribute('width', EW); hit.setAttribute('height', EH);
-      hit.setAttribute('fill', 'transparent');
+      hit.setAttribute('fill', 'rgba(0,0,0,0)'); hit.setAttribute('pointer-events', 'all');
 
       g.appendChild(arrows); g.appendChild(box); g.appendChild(label); g.appendChild(hit);
-
       if (canEdit) {
-        g.style.pointerEvents = 'all';
+        g.setAttribute('pointer-events', 'all');
         if (_salonTool === 'borrar') {
-          hit.style.cursor = 'pointer';
-          hit.addEventListener('click', ev => {
-            ev.stopPropagation();
-            REST_ELEMENTOS = REST_ELEMENTOS.filter(x => x.id !== el.id);
-            saveRestElementos(); renderElements();
-          });
+          g.style.cursor = 'pointer';
+          hit.addEventListener('click', ev => { ev.stopPropagation(); deleteElem(el.id); });
         } else {
-          // click to rotate 90°
-          hit.style.cursor = 'pointer';
-          hit.title = 'Clic para rotar';
-          hit.addEventListener('click', ev => {
-            ev.stopPropagation();
-            el.angle = ((el.angle || 0) + 90) % 360;
-            saveRestElementos(); renderElements();
-          });
+          g.style.cursor = 'grab';
+          g.addEventListener('mousedown', ev => startElemDrag(ev, el.id));
         }
       }
       svg.appendChild(g);
     }
   });
   svg.style.pointerEvents = _salonDesignMode ? 'all' : 'none';
+}
+
+function deleteElem(id) {
+  REST_ELEMENTOS = REST_ELEMENTOS.filter(x => x.id !== id);
+  saveRestElementos(); renderElements();
+}
+
+/* ── FLOOR ELEMENT DRAG ── */
+let _dragElem = null;
+
+function startElemDrag(e, elId) {
+  if (!_salonDesignMode || _salonTool === 'borrar') return;
+  e.preventDefault(); e.stopPropagation();
+  const elem = REST_ELEMENTOS.find(x => x.id === elId);
+  if (!elem) return;
+  const svgEl = document.querySelector(`[data-elid="${elId}"]`);
+  _dragElem = { id: elId, svgEl, startX: e.clientX, startY: e.clientY, origX: elem.x, origY: elem.y, moved: false };
+  if (svgEl) svgEl.style.cursor = 'grabbing';
+  document.addEventListener('mousemove', onElemDragMove);
+  document.addEventListener('mouseup',   onElemDragEnd);
+}
+
+function onElemDragMove(e) {
+  if (!_dragElem) return;
+  const dx = e.clientX - _dragElem.startX;
+  const dy = e.clientY - _dragElem.startY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _dragElem.moved = true;
+  if (!_dragElem.moved) return;
+  const elem = REST_ELEMENTOS.find(x => x.id === _dragElem.id);
+  if (!elem || !_dragElem.svgEl) return;
+  const EW = 100;
+  elem.x = Math.max(0, snap(_dragElem.origX + dx));
+  elem.y = Math.max(0, snap(_dragElem.origY + dy));
+  if (elem.type === 'pared') {
+    _dragElem.svgEl.setAttribute('transform', `translate(${elem.x},${elem.y})`);
+  } else if (elem.type === 'entrada') {
+    _dragElem.svgEl.setAttribute('transform', `translate(${elem.x},${elem.y}) rotate(${elem.angle||0},${EW/2},${EW/2})`);
+  }
+}
+
+function onElemDragEnd(e) {
+  document.removeEventListener('mousemove', onElemDragMove);
+  document.removeEventListener('mouseup',   onElemDragEnd);
+  if (!_dragElem) return;
+  const elem = REST_ELEMENTOS.find(x => x.id === _dragElem.id);
+  if (_dragElem.moved) {
+    saveRestElementos();
+    if (_dragElem.svgEl) _dragElem.svgEl.style.cursor = 'grab';
+  } else if (elem && elem.type === 'entrada') {
+    // click without move → rotate 90°
+    elem.angle = ((elem.angle || 0) + 90) % 360;
+    saveRestElementos(); renderElements();
+  }
+  _dragElem = null;
 }
 
 /* wall drawing */
