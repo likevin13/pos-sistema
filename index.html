@@ -643,7 +643,7 @@
     body.dark .comanda-note { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white; }
 
     /* ══ PICKER FLOAT (estilo Rappi) ══ */
-    .picker-float { position: fixed; bottom: 22px; left: 18px; right: 418px; z-index: 205; display: none; }
+    .picker-float { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); width: 700px; max-width: calc(100vw - 36px); z-index: 203; display: none; }
     .picker-float.open { display: block; }
     .picker-fpanel { background: var(--white); border-radius: 22px 22px 0 0; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.28s; box-shadow: 0 -8px 40px rgba(10,25,49,0.12); }
     .picker-float:hover .picker-fpanel, .picker-float.pinned .picker-fpanel { max-height: 430px; opacity: 1; }
@@ -669,7 +669,7 @@
     .picker-float:hover .pfbar-arrow, .picker-float.pinned .pfbar-arrow { transform: rotate(180deg); }
     .pfbar-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.12); border: none; color: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .pfbar-close:hover { background: rgba(255,255,255,0.22); }
-    @media (max-width: 768px) { .picker-float { left: 0; right: 0; bottom: 0; border-radius: 0; } }
+    @media (max-width: 768px) { .picker-float { width: calc(100vw - 24px); } }
 
     /* ══ MESA HOVER TOOLTIP ══ */
     .mesa-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--white); border-radius: 14px; padding: 12px 14px; min-width: 200px; max-width: 250px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: none; z-index: 50; pointer-events: none; }
