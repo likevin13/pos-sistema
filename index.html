@@ -1766,6 +1766,7 @@ function showModeOverlay() {
 
 function selectMode(mode) {
   APP.mode = mode;
+  ls.setItem(K + 'mode', mode);
   document.getElementById('modeOverlay').style.display = 'none';
   applyMode(mode);
   showRoleOverlay();
@@ -1871,8 +1872,12 @@ function setupSalonCanvas() {
   const canvas = document.getElementById('salonCanvas');
   if (!canvas || canvas._rbSetup) return;
   canvas._rbSetup = true;
-  canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 0 && e.target === canvas) { startRubberBand(e); }
+  const wrap = canvas.closest('.salon-wrap');
+  if (!wrap) return;
+  wrap.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.mesa-float, .salon-toolbar, button')) return;
+    startRubberBand(e);
   });
 }
 
@@ -3169,7 +3174,14 @@ async function onAuthSuccess(user) {
   document.getElementById('cashierInitial').textContent = name.charAt(0).toUpperCase();
   await loadDataFromSupabase();
   loadTheme();
-  showModeOverlay();
+  const savedMode = ls.getItem(K + 'mode');
+  if (savedMode) {
+    APP.mode = savedMode;
+    applyMode(savedMode);
+    showRoleOverlay();
+  } else {
+    showModeOverlay();
+  }
 }
 
 /* ── ROLE SELECTION ── */
