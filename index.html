@@ -1927,46 +1927,49 @@ function renderElements() {
       svg.appendChild(rect);
 
     } else if (el.type === 'entrada') {
+      const EW = 100, EH = 52;  // entrance element size
       const g = document.createElementNS(NS, 'g');
       g.setAttribute('class', 'floor-el floor-entrada');
       const angle = el.angle || 0;
-      const cx = el.x + el.w / 2, cy = el.y + el.w / 2;
+      const cx = el.x + EW / 2, cy = el.y + EH / 2;
       g.setAttribute('transform', `rotate(${angle},${cx},${cy})`);
 
-      // Door frame posts
-      const post1 = document.createElementNS(NS, 'rect');
-      post1.setAttribute('x', el.x - 4); post1.setAttribute('y', el.y - 12);
-      post1.setAttribute('width', '8');   post1.setAttribute('height', '24');
-      post1.setAttribute('fill', '#5a3b10'); post1.setAttribute('rx', '2');
-      const post2 = document.createElementNS(NS, 'rect');
-      post2.setAttribute('x', el.x + el.w - 4); post2.setAttribute('y', el.y - 12);
-      post2.setAttribute('width', '8');           post2.setAttribute('height', '24');
-      post2.setAttribute('fill', '#5a3b10');       post2.setAttribute('rx', '2');
+      // Three downward arrows
+      const arrows = document.createElementNS(NS, 'text');
+      arrows.setAttribute('x', el.x + EW / 2); arrows.setAttribute('y', el.y + 16);
+      arrows.setAttribute('text-anchor', 'middle');
+      arrows.setAttribute('font-size', '14');
+      arrows.setAttribute('fill', '#e06010');
+      arrows.setAttribute('font-family', 'sans-serif');
+      arrows.textContent = '▼  ▼  ▼';
 
-      // Door swing arc (quarter circle: hinge at left post, swings down)
-      const arc = document.createElementNS(NS, 'path');
-      const r = el.w;
-      arc.setAttribute('d', `M ${el.x + r} ${el.y} A ${r} ${r} 0 0 0 ${el.x} ${el.y + r}`);
-      arc.setAttribute('fill', 'rgba(180,130,40,0.1)');
-      arc.setAttribute('stroke', '#9b7225');
-      arc.setAttribute('stroke-width', '1.5');
-      arc.setAttribute('stroke-dasharray', '5,3');
+      // Label box
+      const box = document.createElementNS(NS, 'rect');
+      box.setAttribute('x', el.x); box.setAttribute('y', el.y + 20);
+      box.setAttribute('width', EW); box.setAttribute('height', 28);
+      box.setAttribute('fill', 'rgba(255,200,120,0.18)');
+      box.setAttribute('stroke', '#e06010');
+      box.setAttribute('stroke-width', '2');
+      box.setAttribute('rx', '7');
 
-      // Door leaf (closed position)
-      const leaf = document.createElementNS(NS, 'line');
-      leaf.setAttribute('x1', el.x); leaf.setAttribute('y1', el.y);
-      leaf.setAttribute('x2', el.x + r); leaf.setAttribute('y2', el.y);
-      leaf.setAttribute('stroke', '#9b7225');
-      leaf.setAttribute('stroke-width', '4');
-      leaf.setAttribute('stroke-linecap', 'round');
+      // ENTRADA text
+      const label = document.createElementNS(NS, 'text');
+      label.setAttribute('x', el.x + EW / 2); label.setAttribute('y', el.y + 39);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', '11');
+      label.setAttribute('font-weight', '700');
+      label.setAttribute('fill', '#e06010');
+      label.setAttribute('font-family', 'Lato, sans-serif');
+      label.setAttribute('letter-spacing', '1.5');
+      label.textContent = 'ENTRADA';
 
-      // Transparent hit area for clicks
+      // Transparent hit area
       const hit = document.createElementNS(NS, 'rect');
-      hit.setAttribute('x', el.x - 8); hit.setAttribute('y', el.y - 16);
-      hit.setAttribute('width', el.w + 16); hit.setAttribute('height', el.w + 20);
+      hit.setAttribute('x', el.x); hit.setAttribute('y', el.y);
+      hit.setAttribute('width', EW); hit.setAttribute('height', EH);
       hit.setAttribute('fill', 'transparent');
 
-      g.appendChild(arc); g.appendChild(post1); g.appendChild(post2); g.appendChild(leaf); g.appendChild(hit);
+      g.appendChild(arrows); g.appendChild(box); g.appendChild(label); g.appendChild(hit);
 
       if (canEdit) {
         g.style.pointerEvents = 'all';
@@ -2068,14 +2071,14 @@ function onDrawEnd(e) {
 function placeEntrada(e) {
   const canvas = document.getElementById('salonCanvas');
   const rect   = canvas.getBoundingClientRect();
-  const x = snap(e.clientX - rect.left) - 40;
-  const y = snap(e.clientY - rect.top)  - 5;
+  const x = snap(e.clientX - rect.left) - 50;  // center 100px wide
+  const y = snap(e.clientY - rect.top)  - 26;  // center 52px tall
   REST_ELEMENTOS.push({
     id:    Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     type:  'entrada',
     x:     Math.round(x),
     y:     Math.round(y),
-    w:     80,
+    w:     100,
     angle: 0
   });
   saveRestElementos();
