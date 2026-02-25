@@ -1871,10 +1871,8 @@ function setupSalonCanvas() {
   const canvas = document.getElementById('salonCanvas');
   if (!canvas || canvas._rbSetup) return;
   canvas._rbSetup = true;
-  canvas.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 2) { startRubberBand(e); return; }
-    if (e.button === 0 && e.target === canvas && _selectedMesas.size) { clearSelection(); }
+    if (e.button === 0 && e.target === canvas) { startRubberBand(e); }
   });
 }
 
