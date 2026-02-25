@@ -580,24 +580,15 @@
     .salon-toolbar { position: absolute; top: 16px; right: 20px; z-index: 10; display: flex; gap: 10px; align-items: center; }
     .salon-canvas {
       position: absolute; inset: 0;
-      background-color: #2e8b52;
-      background-image:
-        repeating-linear-gradient(
-          0deg,
-          rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 52px,
-          transparent       52px, transparent       104px
-        ),
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 52px,
-          transparent             52px, transparent             104px
-        );
+      background-color: #f8fafc;
+      background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+      background-size: 28px 28px;
     }
     .mesa-float { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: grab; user-select: none; }
     .mesa-float:active { cursor: grabbing; }
     .mesa-float-img { width: 110px; height: 110px; object-fit: contain; transition: transform 0.2s, filter 0.2s; pointer-events: none; }
     .mesa-float:hover .mesa-float-img { transform: scale(1.08); filter: drop-shadow(0 8px 20px rgba(10,25,49,0.2)); }
-    .mesa-float-label { font-size: 13px; font-weight: 700; color: var(--dark); background: rgba(255,255,255,0.94); padding: 3px 11px; border-radius: 20px; backdrop-filter: blur(8px); box-shadow: 0 2px 8px rgba(0,0,0,0.22); pointer-events: none; }
+    .mesa-float-label { font-size: 13px; font-weight: 700; color: var(--dark); background: white; padding: 3px 11px; border-radius: 20px; box-shadow: 0 1px 6px rgba(10,25,49,0.13); pointer-events: none; }
     .mesa-float-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; pointer-events: none; }
     .mesa-float-status.libre { background: #ECFDF5; color: #10B981; }
     .mesa-float-status.ocupada { background: #FEF2F2; color: #EF4444; }
