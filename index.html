@@ -575,6 +575,24 @@
     body.dark .mode-card { background: rgba(8,20,45,0.97); border-color: rgba(74,127,167,0.20); }
     body.dark .mode-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
 
+    /* ══ ONBOARDING OVERLAY (solo registro nuevo) ══ */
+    .onboarding-overlay { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: none; align-items: center; justify-content: center; }
+    .onboarding-card { background: var(--white); border-radius: 28px; padding: 48px 40px; width: 100%; max-width: 560px; box-shadow: var(--shadow-lg); text-align: center; border: 1px solid rgba(74,127,167,0.15); }
+    .onboarding-title { font-size: 22px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .onboarding-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .onboarding-field { margin-bottom: 24px; text-align: left; }
+    .onboarding-field label { font-size: 13px; font-weight: 600; color: var(--dark); display: block; margin-bottom: 8px; }
+    .onboarding-input { width: 100%; padding: 13px 16px; border-radius: 12px; border: 2px solid var(--border); background: var(--bg); font-size: 15px; font-family: 'Lato', sans-serif; color: var(--dark); outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+    .onboarding-input:focus { border-color: var(--gold); }
+    .onboarding-section-label { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 14px; text-align: left; }
+    .onboarding-mode-btn { padding: 28px 20px; border-radius: 20px; border: 2px solid var(--border); background: var(--bg); cursor: pointer; transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1); display: flex; flex-direction: column; align-items: center; gap: 10px; font-family: 'Lato', sans-serif; width: 100%; }
+    .onboarding-mode-btn:hover, .onboarding-mode-btn.selected { border-color: var(--gold); background: rgba(74,127,167,0.06); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+    .onboarding-btn-confirm { margin-top: 28px; width: 100%; padding: 15px; border-radius: 14px; background: var(--primary); color: white; font-size: 15px; font-weight: 700; border: none; cursor: pointer; font-family: 'Lato', sans-serif; transition: opacity 0.2s, transform 0.15s; }
+    .onboarding-btn-confirm:hover { opacity: 0.9; transform: translateY(-1px); }
+    body.dark .onboarding-card { background: rgba(8,20,45,0.97); border-color: rgba(74,127,167,0.20); }
+    body.dark .onboarding-mode-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+    body.dark .onboarding-input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: var(--text); }
+
     /* ══ SALON / FLOOR PLAN ══ */
     .salon-wrap { width: 100%; height: calc(100vh - 60px); position: relative; overflow: hidden; }
     .salon-toolbar { position: absolute; top: 16px; right: 20px; z-index: 10; display: flex; gap: 10px; align-items: center; }
@@ -1018,7 +1036,7 @@
 <header class="header">
   <div class="logo">
     <div class="logo-mark">💲</div>
-    <div class="logo-name">Like<em>Pos</em></div>
+    <div class="logo-name" id="logoName">Like<em>Pos</em></div>
   </div>
 
   <nav class="nav-tabs">
@@ -1274,7 +1292,7 @@
 <div class="overlay" id="receiptOverlay">
   <div class="modal">
     <div class="receipt-header">
-      <div class="receipt-brand">LikePos</div>
+      <div class="receipt-brand" id="receiptBrand">LikePos</div>
       <div class="receipt-info">Tienda Principal · NIT: 900.123.456-7<br>Calle 10 #5-40, Yopal, Casanare · Tel: (608) 555-0000</div>
     </div>
     <div id="receiptBody"></div>
@@ -1420,6 +1438,36 @@
         <span class="mode-btn-desc">Mesas, comandas y cocina</span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING OVERLAY (solo en registro nuevo) ═══ -->
+<div class="onboarding-overlay" id="onboardingOverlay">
+  <div class="onboarding-card">
+    <div class="auth-logo" style="margin-bottom:20px">
+      <div class="auth-logo-mark">💲</div>
+      <div class="auth-logo-name">Like<em>Pos</em></div>
+    </div>
+    <div class="onboarding-title">¡Bienvenido!</div>
+    <div class="onboarding-subtitle">Cuéntanos sobre tu negocio para personalizar tu experiencia</div>
+    <div class="onboarding-field">
+      <label for="onboardingBizName">Nombre del negocio o restaurante</label>
+      <input type="text" id="onboardingBizName" class="onboarding-input" placeholder="Ej: El Buen Sabor, Tienda Mi Gente..." maxlength="50">
+    </div>
+    <div class="onboarding-section-label">¿Qué tipo de negocio tienes?</div>
+    <div class="mode-buttons">
+      <button class="onboarding-mode-btn" id="onboardingBtnTienda" onclick="selectOnboardingMode('tienda')">
+        <span class="mode-btn-icon">🛒</span>
+        <span class="mode-btn-label">Tienda</span>
+        <span class="mode-btn-desc">POS para tienda, venta directa</span>
+      </button>
+      <button class="onboarding-mode-btn" id="onboardingBtnRestaurante" onclick="selectOnboardingMode('restaurante')">
+        <span class="mode-btn-icon">🍽️</span>
+        <span class="mode-btn-label">Restaurante</span>
+        <span class="mode-btn-desc">Mesas, comandas y cocina</span>
+      </button>
+    </div>
+    <button class="onboarding-btn-confirm" onclick="confirmOnboarding()">Comenzar →</button>
   </div>
 </div>
 
@@ -1794,6 +1842,56 @@ function applyMode(mode) {
   document.querySelectorAll('[data-mode-rest]').forEach(el => {
     el.style.display = mode === 'restaurante' ? '' : 'none';
   });
+}
+
+/* ── ONBOARDING (nuevo usuario) ── */
+let _onboardingMode = null;
+
+function showOnboarding() {
+  _onboardingMode = null;
+  document.getElementById('onboardingBizName').value = '';
+  document.getElementById('onboardingBtnTienda').classList.remove('selected');
+  document.getElementById('onboardingBtnRestaurante').classList.remove('selected');
+  document.getElementById('onboardingOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('onboardingBizName').focus(), 150);
+}
+
+function selectOnboardingMode(mode) {
+  _onboardingMode = mode;
+  document.getElementById('onboardingBtnTienda').classList.toggle('selected', mode === 'tienda');
+  document.getElementById('onboardingBtnRestaurante').classList.toggle('selected', mode === 'restaurante');
+}
+
+function confirmOnboarding() {
+  const name = document.getElementById('onboardingBizName').value.trim();
+  if (!name) { document.getElementById('onboardingBizName').focus(); document.getElementById('onboardingBizName').style.borderColor = '#ef4444'; return; }
+  if (!_onboardingMode) {
+    document.getElementById('onboardingBtnTienda').style.animation = 'none';
+    document.getElementById('onboardingBtnRestaurante').style.borderColor = '#ef4444';
+    document.getElementById('onboardingBtnTienda').style.borderColor = '#ef4444';
+    setTimeout(() => {
+      document.getElementById('onboardingBtnTienda').style.borderColor = '';
+      document.getElementById('onboardingBtnRestaurante').style.borderColor = '';
+    }, 1200);
+    return;
+  }
+  document.getElementById('onboardingBizName').style.borderColor = '';
+  ls.setItem(K + 'bizname', name);
+  ls.setItem(K + 'mode', _onboardingMode);
+  APP.mode = _onboardingMode;
+  document.getElementById('onboardingOverlay').style.display = 'none';
+  applyBizName();
+  applyMode(_onboardingMode);
+  showRoleOverlay();
+}
+
+function applyBizName() {
+  const biz = ls.getItem(K + 'bizname');
+  if (!biz) return;
+  const logo = document.getElementById('logoName');
+  if (logo) logo.textContent = biz;
+  const rb = document.getElementById('receiptBrand');
+  if (rb) rb.textContent = biz;
 }
 
 /* ── SALON MESAS ── */
@@ -3157,6 +3255,7 @@ document.getElementById('invSearchInput').addEventListener('input', e => {
    AUTH
 ═══════════════════════════════════════════ */
 let authMode = 'login';
+let _isNewRegistration = false;
 
 function switchAuthTab(mode) {
   authMode = mode;
@@ -3198,6 +3297,7 @@ async function submitAuth() {
     setAuthLoading(false);
     if (error) { showAuthError(error.message); return; }
     if (data.user && data.session) {
+      _isNewRegistration = true;
       await onAuthSuccess(data.user);
     } else {
       showAuthError('Revisa tu correo para confirmar tu cuenta antes de ingresar');
@@ -3213,6 +3313,12 @@ async function onAuthSuccess(user) {
   document.getElementById('cashierInitial').textContent = name.charAt(0).toUpperCase();
   await loadDataFromSupabase();
   loadTheme();
+  applyBizName();
+  if (_isNewRegistration) {
+    _isNewRegistration = false;
+    showOnboarding();
+    return;
+  }
   const savedMode = ls.getItem(K + 'mode');
   if (savedMode) {
     APP.mode = savedMode;
