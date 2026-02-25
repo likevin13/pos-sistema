@@ -1066,6 +1066,10 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="5" width="22" height="3" rx="1"/><path d="M4 8v11M20 8v11M7 14h10"/></svg>
       Salón
     </button>
+    <button class="nav-tab" data-view="pos" data-mode-rest onclick="goTo('pos')" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Carta
+    </button>
     <button class="nav-tab" data-view="inventory" onclick="goTo('inventory')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
       Inventario
@@ -1423,6 +1427,10 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="3" rx="1"/><path d="M4 8v11M20 8v11M7 14h10"/></svg>
     Salón
   </button>
+  <button class="bn-tab" data-view="pos" data-mode-rest onclick="goTo('pos')" style="display:none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Carta
+  </button>
   <button class="bn-tab" data-view="inventory" onclick="goTo('inventory')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
     Inventario
@@ -1520,14 +1528,14 @@
     <div class="picker-rows" id="pickerRows"></div>
   </div>
   <div class="picker-fbar" onclick="document.getElementById('pickerFloat').classList.toggle('pinned')">
-    <div class="pfbar-left">
-      <div class="pfbar-badge">🛒</div>
-      <div>
-        <div class="pfbar-title" id="pfbarTitle">Agregar a Mesa</div>
-        <div class="pfbar-sub"  id="pfbarSub">Toca para ver el menú ▸</div>
+    <div class="cb-left">
+      <div class="cb-badge" id="pfBadge">0</div>
+      <div class="cb-info">
+        <span class="cb-items" id="pfMesa">Mesa —</span>
+        <span class="cb-total" id="pfTotal">$ 0</span>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
+    <div class="cb-right">
       <span class="pfbar-arrow">▾</span>
       <button class="pfbar-close" onclick="event.stopPropagation(); closePickerFloat()">✕</button>
     </div>
@@ -2567,11 +2575,16 @@ function closePickerFloat() {
 
 function renderPickerRows() {
   if (!ACTIVE_COMANDA) return;
-  const c     = REST_COMANDAS[ACTIVE_COMANDA] || { items: [] };
-  const total = (c.items || []).reduce((s, i) => s + i.qty, 0);
-  document.getElementById('pfbarSub').textContent = total
-    ? `${total} ítem${total !== 1 ? 's' : ''} en la comanda`
-    : 'Toca para ver el menú ▸';
+  const c      = REST_COMANDAS[ACTIVE_COMANDA] || { items: [] };
+  const m      = REST_MESAS.find(x => x.id === ACTIVE_COMANDA);
+  const totalQty = (c.items || []).reduce((s, i) => s + i.qty, 0);
+  const totalAmt = (c.items || []).reduce((s, i) => s + i.qty * (i.unitPrice || 0), 0);
+  const badge = document.getElementById('pfBadge');
+  const mesa  = document.getElementById('pfMesa');
+  const total = document.getElementById('pfTotal');
+  if (badge) badge.textContent = totalQty || '0';
+  if (mesa)  mesa.textContent  = m ? `Mesa ${m.numero}` : 'Mesa';
+  if (total) total.textContent = fmt(totalAmt);
   const rows = document.getElementById('pickerRows');
   if (!APP.products.length) {
     rows.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No hay productos registrados</div>';
@@ -2615,6 +2628,7 @@ function pickerQty(prodId, delta) {
   renderPickerRows();
   renderComandaItems(ACTIVE_COMANDA);
   renderSalon();
+  if (APP.view === 'pos') syncCardRest(prodId);
 }
 
 /* ── COMANDA TICKET ── */
@@ -2667,7 +2681,10 @@ function goTo(view) {
   document.querySelectorAll('.bn-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
   document.getElementById('cartFloat').style.display = (view === 'pos' && APP.mode !== 'restaurante') ? '' : 'none';
-  if (view === 'pos')       { renderCats(); renderProducts(); renderCart(); }
+  if (view !== 'pos') closePickerFloat();
+  if (view === 'pos')       { renderCats(); renderProducts(); renderCart();
+    if (APP.mode === 'restaurante' && ACTIVE_COMANDA) openPickerFloat();
+  }
   if (view === 'inventory') { renderInventory(); }
   if (view === 'cierre')    { renderCierre(); }
   if (view === 'reports')   { renderReports(); }
@@ -2708,9 +2725,12 @@ function renderProducts() {
     return;
   }
 
+  const isRest  = APP.mode === 'restaurante';
+  const comanda = isRest && ACTIVE_COMANDA ? (REST_COMANDAS[ACTIVE_COMANDA] || { items: [] }) : null;
+
   document.getElementById('productsGrid').innerHTML = list.map((p, idx) => {
     const price  = fp(p);
-    const item   = APP.cart.find(x => x.id === p.id);
+    const item   = comanda ? (comanda.items || []).find(x => x.id === p.id) : APP.cart.find(x => x.id === p.id);
     const qty    = item ? item.qty : 0;
     const sClass = p.stock === 0 ? 'empty' : p.stock <= 5 ? 'low' : '';
     const oos    = p.stock === 0;
@@ -2726,16 +2746,16 @@ function renderProducts() {
         <div class="card-actions">
           <button class="card-add-btn" id="cadd-${p.id}"
             style="${qty > 0 || oos ? 'display:none' : ''}"
-            onclick="event.stopPropagation(); addToCart('${p.id}')">
+            onclick="event.stopPropagation(); onAddCard('${p.id}')">
             + Agregar
           </button>
           <div class="card-qty-ctrl ${qty > 0 ? 'show' : ''}" id="cqctrl-${p.id}">
-            <button class="cq-btn" onclick="event.stopPropagation(); cardQty('${p.id}', -1)">−</button>
+            <button class="cq-btn" onclick="event.stopPropagation(); handleCardQty('${p.id}',-1)">−</button>
             <input type="number" class="cq-input" id="cqnum-${p.id}" value="${qty}" min="0"
               onclick="event.stopPropagation(); this.select()"
-              oninput="event.stopPropagation(); cardQtyInput('${p.id}', this.value)"
+              oninput="event.stopPropagation(); handleCardQtyInput('${p.id}', this.value)"
               onkeydown="event.stopPropagation()">
-            <button class="cq-btn" onclick="event.stopPropagation(); cardQty('${p.id}', 1)">+</button>
+            <button class="cq-btn" onclick="event.stopPropagation(); handleCardQty('${p.id}',1)">+</button>
           </div>
         </div>
       </div>`;
@@ -2775,7 +2795,85 @@ function cardClick(id, e) {
   if (e.target.closest('.card-actions')) return;
   const prod = APP.products.find(p => p.id === id);
   if (!prod || prod.stock === 0) return;
-  addToCart(id);
+  onAddCard(id);
+}
+
+/* Mode-aware add from product card */
+function onAddCard(id) {
+  if (APP.mode === 'restaurante') addProdToComanda(id);
+  else addToCart(id);
+}
+
+/* Add product to active comanda (restaurante mode) */
+function addProdToComanda(id) {
+  if (!ACTIVE_COMANDA) { toast('🪑 Selecciona una mesa primero'); return; }
+  pickerQty(id, 1);
+  const f = document.getElementById('pickerFloat');
+  if (!f.classList.contains('open')) openPickerFloat();
+  const p = APP.products.find(x => x.id === id);
+  const m = REST_MESAS.find(x => x.id === ACTIVE_COMANDA);
+  if (p) toast(`✓ ${p.name}${m ? ` → Mesa ${m.numero}` : ''}`);
+}
+
+/* Mode-aware +/− on card */
+function handleCardQty(id, delta) {
+  if (APP.mode === 'restaurante') {
+    if (!ACTIVE_COMANDA) { toast('🪑 Selecciona una mesa primero'); return; }
+    pickerQty(id, delta);
+    const f = document.getElementById('pickerFloat');
+    if (!f.classList.contains('open')) openPickerFloat();
+  } else {
+    cardQty(id, delta);
+  }
+}
+
+/* Mode-aware qty input on card */
+function handleCardQtyInput(id, val) {
+  if (APP.mode === 'restaurante') {
+    if (!ACTIVE_COMANDA) return;
+    const n = parseInt(val) || 0;
+    const p = APP.products.find(x => x.id === id);
+    if (!p) return;
+    if (!REST_COMANDAS[ACTIVE_COMANDA]) REST_COMANDAS[ACTIVE_COMANDA] = { items: [], estado: 'en_curso', timestamp: Date.now() };
+    const c = REST_COMANDAS[ACTIVE_COMANDA];
+    const ex = c.items.find(i => i.id === id);
+    if (n > 0) {
+      if (ex) ex.qty = n;
+      else c.items.push({ id: p.id, name: p.name, emoji: p.emoji, qty: n, unitPrice: fp(p), cost: p.cost || 0, nota: '' });
+    } else {
+      c.items = c.items.filter(i => i.id !== id);
+    }
+    saveRestComandas();
+    syncCardRest(id);
+    renderPickerRows();
+    renderComandaItems(ACTIVE_COMANDA);
+  } else {
+    cardQtyInput(id, val);
+  }
+}
+
+/* Sync card display from comanda qty (restaurante mode) */
+function syncCardRest(id) {
+  if (!ACTIVE_COMANDA) return;
+  const c   = REST_COMANDAS[ACTIVE_COMANDA] || { items: [] };
+  const item = (c.items || []).find(x => x.id === id);
+  const qty  = item ? item.qty : 0;
+  const prod = APP.products.find(p => p.id === id);
+  const card  = document.getElementById(`pc-${id}`);
+  const addB  = document.getElementById(`cadd-${id}`);
+  const ctrl  = document.getElementById(`cqctrl-${id}`);
+  const numEl = document.getElementById(`cqnum-${id}`);
+  if (!card) return;
+  if (qty > 0) {
+    card.classList.add('in-cart');
+    if (addB)  addB.style.display = 'none';
+    if (ctrl)  ctrl.classList.add('show');
+    if (numEl) numEl.value = qty;
+  } else {
+    card.classList.remove('in-cart');
+    if (addB)  addB.style.display = prod && prod.stock > 0 ? '' : 'none';
+    if (ctrl)  ctrl.classList.remove('show');
+  }
 }
 
 /* ═══ CART OPERATIONS ═══ */
