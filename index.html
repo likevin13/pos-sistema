@@ -651,6 +651,39 @@
     body.dark .picker-sheet { background: #0F1E35; }
     body.dark .picker-card { background: rgba(255,255,255,0.04); }
 
+    /* ══ MESA HOVER TOOLTIP ══ */
+    .mesa-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--white); border-radius: 14px; padding: 12px 14px; min-width: 200px; max-width: 250px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: none; z-index: 50; pointer-events: none; }
+    .mesa-float:hover .mesa-tooltip { display: block; }
+    .mesa-tooltip-head { font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .mesa-tooltip-row { display: flex; align-items: baseline; gap: 6px; font-size: 12px; padding: 3px 0; }
+    .mesa-tooltip-qty { font-weight: 700; color: var(--blue); min-width: 22px; }
+    .mesa-tooltip-name { flex: 1; color: var(--dark); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mesa-tooltip-sub { color: var(--muted); font-size: 11px; min-width: 58px; text-align: right; }
+    .mesa-tooltip-total { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--dark); }
+    .mesa-tooltip-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 4px 0; }
+
+    /* ══ COMANDA TICKET ══ */
+    .comanda-ticket-overlay { position: fixed; inset: 0; background: rgba(10,25,49,0.6); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .comanda-ticket-overlay.open { display: flex; }
+    .comanda-ticket { background: white; width: 310px; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg); font-family: 'Courier New', monospace; }
+    .ticket-top { background: var(--dark); color: white; text-align: center; padding: 18px 16px 14px; }
+    .ticket-brand { font-size: 11px; letter-spacing: 2px; opacity: 0.7; font-family: 'Lato', sans-serif; }
+    .ticket-mesa-num { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+    .ticket-timestamp { font-size: 11px; opacity: 0.65; margin-top: 2px; font-family: 'Lato', sans-serif; }
+    .ticket-body { padding: 14px 16px; }
+    .ticket-hr { border: none; border-top: 2px dashed #ddd; margin: 10px 0; }
+    .ticket-item { display: flex; align-items: baseline; gap: 6px; padding: 4px 0; font-size: 13px; }
+    .ticket-item-qty { font-weight: 700; min-width: 26px; }
+    .ticket-item-name { flex: 1; }
+    .ticket-item-price { font-size: 11px; color: #777; min-width: 70px; text-align: right; }
+    .ticket-nota { font-size: 11px; color: #888; padding: 1px 0 5px 26px; font-style: italic; }
+    .ticket-total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; padding: 4px 0; }
+    .ticket-estado-badge { display: inline-block; font-size: 11px; font-family: 'Lato', sans-serif; font-weight: 700; padding: 3px 12px; border-radius: 20px; margin-top: 8px; }
+    .ticket-actions { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid #eee; }
+    .btn-ticket-print { flex: 1; padding: 10px; border-radius: 10px; background: var(--dark); color: white; border: none; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-ticket-close { flex: 1; padding: 10px; border-radius: 10px; background: var(--bg); color: var(--dark); border: 1px solid var(--border); font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+    @media print { body > *:not(.comanda-ticket-overlay) { display: none !important; } .comanda-ticket-overlay { position: static !important; background: none !important; display: block !important; } .comanda-ticket { box-shadow: none !important; } .ticket-actions { display: none !important; } }
+
     /* ══ MESA FLOAT EXTRAS ══ */
     .mesa-float-del { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); border: none; color: white; font-size: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; box-shadow: 0 2px 6px rgba(239,68,68,0.4); padding: 0; }
     .mesa-float:hover .mesa-float-del { display: flex; }
@@ -1372,7 +1405,10 @@
       <div class="comanda-mesa-name" id="comandaMesaName">Mesa 1</div>
       <span class="comanda-status-badge" id="comandaStatusBadge"></span>
     </div>
-    <button class="comanda-close" onclick="closeComanda()">✕</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-kitchen" style="flex:none;padding:7px 12px;font-size:11px" onclick="showComandaTicket()">📋 Comanda</button>
+      <button class="comanda-close" onclick="closeComanda()">✕</button>
+    </div>
   </div>
   <div class="comanda-items" id="comandaItems"></div>
   <button class="btn-add-items" onclick="openPickerSheet()">＋ Agregar productos al pedido</button>
@@ -1392,6 +1428,22 @@
       <button class="comanda-close" onclick="closePickerSheet()">✕</button>
     </div>
     <div class="picker-grid" id="pickerGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ COMANDA TICKET OVERLAY ═══ -->
+<div class="comanda-ticket-overlay" id="comandaTicketOverlay" onclick="if(event.target===this)closeComandaTicket()">
+  <div class="comanda-ticket">
+    <div class="ticket-top">
+      <div class="ticket-brand">COMANDA DE COCINA</div>
+      <div class="ticket-mesa-num" id="ticketMesaNum">Mesa 1</div>
+      <div class="ticket-timestamp" id="ticketTime">--:--</div>
+    </div>
+    <div class="ticket-body" id="ticketBody"></div>
+    <div class="ticket-actions">
+      <button class="btn-ticket-print" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn-ticket-close" onclick="closeComandaTicket()">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -1750,7 +1802,19 @@ function renderSalon() {
     el.dataset.mesaId = m.id;
     el.style.left = m.x + 'px';
     el.style.top  = m.y + 'px';
+    const c = REST_COMANDAS[m.id];
+    const items = c?.items || [];
+    const tooltipItems = items.length
+      ? items.map(it => `<div class="mesa-tooltip-row"><span class="mesa-tooltip-qty">${it.qty}×</span><span class="mesa-tooltip-name">${it.emoji} ${it.name}</span><span class="mesa-tooltip-sub">${fmt(it.unitPrice * it.qty)}</span></div>`).join('')
+      : `<div class="mesa-tooltip-empty">Mesa libre</div>`;
+    const tooltipTotal = items.length ? `<div class="mesa-tooltip-total"><span>Total</span><span>${fmt(total)}</span></div>` : '';
+    const estadoEmoji = { libre:'🟢', en_curso:'🟡', en_cocina:'🍳', cuenta_pedida:'🧾' }[estado] || '🟢';
     el.innerHTML = `
+      <div class="mesa-tooltip">
+        <div class="mesa-tooltip-head"><span>Mesa ${m.numero}</span><span>${estadoEmoji}</span></div>
+        ${tooltipItems}
+        ${tooltipTotal}
+      </div>
       <img class="mesa-float-img" src="images/mesa.png" alt="Mesa ${m.numero}">
       <div class="mesa-float-label ${estado}">${estado !== 'libre' ? '🔴 ' : ''}Mesa ${m.numero}</div>
       ${total ? `<div class="mesa-float-total">${fmt(total)}</div>` : ''}
@@ -1993,6 +2057,42 @@ function addToComanda(prodId) {
   toast(`✓ ${p.emoji} ${p.name} agregado`);
 }
 
+/* ── COMANDA TICKET ── */
+function showComandaTicket() {
+  if (!ACTIVE_COMANDA) return;
+  const m = REST_MESAS.find(x => x.id === ACTIVE_COMANDA);
+  const c = REST_COMANDAS[ACTIVE_COMANDA] || { items: [], estado: 'libre' };
+  const tiempo = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  const estadoLabel = { libre:'🟢 Libre', en_curso:'🟡 En curso', en_cocina:'🍳 Enviado a cocina', cuenta_pedida:'🧾 Cuenta pedida' };
+  const estadoBg    = { libre:'#ECFDF5', en_curso:'#FFF7ED', en_cocina:'#FFF7ED', cuenta_pedida:'#FEF2F2' };
+  const estadoColor = { libre:'#10B981', en_curso:'#F59E0B', en_cocina:'#F59E0B', cuenta_pedida:'#EF4444' };
+  const estado = c.estado || 'libre';
+  const total  = (c.items || []).reduce((s, i) => s + i.unitPrice * i.qty, 0);
+  document.getElementById('ticketMesaNum').textContent = 'Mesa ' + (m ? m.numero : '');
+  document.getElementById('ticketTime').textContent    = tiempo;
+  document.getElementById('ticketBody').innerHTML = `
+    <hr class="ticket-hr" style="margin-top:0">
+    ${(c.items || []).length
+      ? (c.items || []).map(it => `
+          <div class="ticket-item">
+            <span class="ticket-item-qty">${it.qty}×</span>
+            <span class="ticket-item-name">${it.emoji} ${it.name}</span>
+            <span class="ticket-item-price">${fmt(it.unitPrice * it.qty)}</span>
+          </div>
+          ${it.nota ? `<div class="ticket-nota">↳ ${it.nota}</div>` : ''}`).join('')
+      : '<div style="text-align:center;color:#999;padding:10px 0;font-family:Lato,sans-serif;font-size:13px">Sin productos</div>'}
+    <hr class="ticket-hr">
+    <div class="ticket-total-row"><span>TOTAL</span><span>${fmt(total)}</span></div>
+    <div style="text-align:center;margin-top:10px">
+      <span class="ticket-estado-badge" style="background:${estadoBg[estado]};color:${estadoColor[estado]}">${estadoLabel[estado]}</span>
+    </div>`;
+  document.getElementById('comandaTicketOverlay').classList.add('open');
+}
+
+function closeComandaTicket() {
+  document.getElementById('comandaTicketOverlay').classList.remove('open');
+}
+
 /* ═══════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════ */
@@ -2006,7 +2106,7 @@ function goTo(view) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
   document.querySelectorAll('.bn-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + view));
-  document.getElementById('cartFloat').style.display = view === 'pos' ? '' : 'none';
+  document.getElementById('cartFloat').style.display = (view === 'pos' && APP.mode !== 'restaurante') ? '' : 'none';
   if (view === 'pos')       { renderCats(); renderProducts(); renderCart(); }
   if (view === 'inventory') { renderInventory(); }
   if (view === 'cierre')    { renderCierre(); }
