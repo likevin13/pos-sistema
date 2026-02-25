@@ -2287,18 +2287,14 @@ function setupSalonCanvas() {
   const canvas = document.getElementById('salonCanvas');
   if (!canvas || canvas._rbSetup) return;
   canvas._rbSetup = true;
-  const wrap = canvas.closest('.salon-wrap');
-  if (!wrap) return;
-  wrap.addEventListener('mousedown', (e) => {
+  canvas.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
-    if (e.target.closest('.salon-toolbar, button')) return;
+    if (e.target.closest('.mesa-float')) return; // mesas handle their own drag
     if (_salonDesignMode) {
-      if (e.target.closest('.mesa-float')) return; // mesas still draggable
-      if (e.target.closest('.floor-el')) return;   // SVG element clicks handled by renderElements
+      if (e.target.closest('.floor-el')) return;   // SVG elements handle their own events
       if (_salonTool === 'pared')   startDrawPared(e);
       else if (_salonTool === 'entrada') placeEntrada(e);
     } else {
-      if (e.target.closest('.mesa-float')) return;
       startRubberBand(e);
     }
   });
@@ -2562,8 +2558,6 @@ function payMesa() {
 /* ── PRODUCT PICKER FLOAT ── */
 function openPickerFloat() {
   if (!ACTIVE_COMANDA) return;
-  const m = REST_MESAS.find(x => x.id === ACTIVE_COMANDA);
-  document.getElementById('pfbarTitle').textContent = 'Mesa ' + (m ? m.numero : '');
   renderPickerRows();
   const f = document.getElementById('pickerFloat');
   f.classList.add('open', 'pinned');
