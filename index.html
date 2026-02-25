@@ -698,15 +698,12 @@
     .btn-ticket-close { flex: 1; padding: 10px; border-radius: 10px; background: var(--bg); color: var(--dark); border: 1px solid var(--border); font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
     @media print { body > *:not(.comanda-ticket-overlay) { display: none !important; } .comanda-ticket-overlay { position: static !important; background: none !important; display: block !important; } .comanda-ticket { box-shadow: none !important; } .ticket-actions { display: none !important; } }
 
-    /* ══ SELECTION MODE ══ */
-    .mesa-sel-check { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; background: rgba(255,255,255,0.6); border: 2px solid rgba(255,255,255,0.9); border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 10; pointer-events: none; transition: all 0.15s; }
-    .sel-active .mesa-sel-check { display: flex; }
-    .mesa-sel-check.on { background: var(--blue); border-color: var(--blue); }
-    .mesa-sel-check.on::after { content: '✓'; color: white; font-size: 13px; font-weight: 900; line-height: 1; }
+    /* ══ RUBBER BAND SELECTION ══ */
+    .rubber-band { position: absolute; border: 2px dashed rgba(74,127,167,0.9); background: rgba(74,127,167,0.13); border-radius: 4px; pointer-events: none; z-index: 20; display: none; }
+    .mesa-sel-check { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; background: var(--blue); border: 2px solid white; border-radius: 50%; display: none; align-items: center; justify-content: center; z-index: 10; pointer-events: none; color: white; font-size: 13px; font-weight: 900; }
+    .mesa-float.selected .mesa-sel-check { display: flex; }
     .mesa-float.selected .mesa-float-img { filter: drop-shadow(0 0 14px rgba(74,127,167,0.9)) brightness(0.85) !important; }
     .salon-toolbar { gap: 10px; }
-    .btn-sel-mode { padding: 8px 14px; border-radius: 10px; background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.35); font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(4px); }
-    .btn-sel-mode:hover { background: rgba(255,255,255,0.28); }
     .sel-count-label { font-size: 13px; font-weight: 700; color: white; background: rgba(255,255,255,0.15); padding: 7px 14px; border-radius: 10px; backdrop-filter: blur(4px); }
     .btn-del-sel { padding: 8px 16px; border-radius: 10px; background: var(--red); color: white; border: none; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
     .btn-del-sel:hover { opacity: 0.85; }
@@ -1756,7 +1753,7 @@ let REST_MESAS    = JSON.parse(ls.getItem(K + 'rest_mesas')    ?? '[]');
 let REST_COMANDAS = JSON.parse(ls.getItem(K + 'rest_comandas') ?? '{}');
 let ACTIVE_COMANDA = null;
 let _drag = null;
-let _selMode = false;
+let _rb   = null;
 let _selectedMesas = new Set();
 
 function saveRestMesas()    { ls.setItem(K + 'rest_mesas',    JSON.stringify(REST_MESAS)); }
@@ -1820,31 +1817,26 @@ function renderSalon() {
   if (!canvas) return;
 
   /* ── toolbar ── */
+  /* ── toolbar ── */
   if (toolbar) {
-    if (_selMode) {
-      const n = _selectedMesas.size;
-      toolbar.innerHTML = `
-        <span class="sel-count-label">${n} mesa${n !== 1 ? 's' : ''} seleccionada${n !== 1 ? 's' : ''}</span>
-        <button class="btn-del-sel" onclick="deleteSelectedMesas()" ${n === 0 ? 'disabled style="opacity:.45"' : ''}>🗑️ Eliminar</button>
-        <button class="btn-cancel-sel" onclick="exitSelMode()">✕ Cancelar</button>`;
-    } else {
-      toolbar.innerHTML = `
-        <button class="btn-primary" onclick="addRestMesa()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nueva Mesa
-        </button>
-        <button class="btn-sel-mode" onclick="enterSelMode()">☑ Seleccionar</button>`;
-    }
+    const n = _selectedMesas.size;
+    toolbar.innerHTML = n > 0
+      ? `<span class="sel-count-label">${n} mesa${n !== 1 ? 's' : ''} seleccionada${n !== 1 ? 's' : ''}</span>
+         <button class="btn-del-sel" onclick="deleteSelectedMesas()">🗑️ Eliminar</button>
+         <button class="btn-cancel-sel" onclick="clearSelection()">✕</button>`
+      : `<button class="btn-primary" onclick="addRestMesa()">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+           Nueva Mesa
+         </button>`;
   }
 
   /* ── mesas ── */
-  canvas.classList.toggle('sel-active', _selMode);
   canvas.querySelectorAll('.mesa-float').forEach(el => el.remove());
   REST_MESAS.forEach(m => {
-    const estado   = getRestMesaEstado(m.id);
-    const total    = getRestMesaTotal(m.id);
-    const isOpen   = ACTIVE_COMANDA === m.id;
-    const isSel    = _selectedMesas.has(m.id);
+    const estado = getRestMesaEstado(m.id);
+    const total  = getRestMesaTotal(m.id);
+    const isOpen = ACTIVE_COMANDA === m.id;
+    const isSel  = _selectedMesas.has(m.id);
     const el = document.createElement('div');
     el.className = ['mesa-float', isOpen ? 'mesa-float-open' : '', isSel ? 'selected' : ''].filter(Boolean).join(' ');
     el.dataset.mesaId = m.id;
@@ -1858,53 +1850,102 @@ function renderSalon() {
     const tooltipTotal = items.length ? `<div class="mesa-tooltip-total"><span>Total</span><span>${fmt(total)}</span></div>` : '';
     const estadoEmoji = { libre:'🟢', en_curso:'🟡', en_cocina:'🍳', cuenta_pedida:'🧾' }[estado] || '🟢';
     el.innerHTML = `
-      ${!_selMode ? `<div class="mesa-tooltip">
+      <div class="mesa-tooltip">
         <div class="mesa-tooltip-head"><span>Mesa ${m.numero}</span><span>${estadoEmoji}</span></div>
         ${tooltipItems}${tooltipTotal}
-      </div>` : ''}
-      <div class="mesa-sel-check ${isSel ? 'on' : ''}"></div>
+      </div>
+      <div class="mesa-sel-check">✓</div>
       <img class="mesa-float-img" src="images/mesa.png" alt="Mesa ${m.numero}">
       <div class="mesa-float-label ${estado}">${estado !== 'libre' ? '🔴 ' : ''}Mesa ${m.numero}</div>
       ${total ? `<div class="mesa-float-total">${fmt(total)}</div>` : ''}
-      ${!_selMode ? `<button class="mesa-float-del" onclick="event.stopPropagation(); deleteRestMesa('${m.id}')" title="Eliminar">✕</button>` : ''}`;
+      <button class="mesa-float-del" onclick="event.stopPropagation(); deleteRestMesa('${m.id}')" title="Eliminar">✕</button>`;
     el.addEventListener('mousedown', (e) => startDrag(e, m.id));
     el.addEventListener('touchstart', (e) => startDragTouch(e, m.id), { passive: false });
     canvas.appendChild(el);
   });
+  setupSalonCanvas();
 }
 
-/* ── SELECTION MODE ── */
-function enterSelMode() {
-  _selMode = true;
+/* ── RUBBER BAND SELECTION ── */
+function setupSalonCanvas() {
+  const canvas = document.getElementById('salonCanvas');
+  if (!canvas || canvas._rbSetup) return;
+  canvas._rbSetup = true;
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 2) { startRubberBand(e); return; }
+    if (e.button === 0 && e.target === canvas && _selectedMesas.size) { clearSelection(); }
+  });
+}
+
+function startRubberBand(e) {
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  _rb = { x1: x, y1: y, x2: x, y2: y };
+  let rb = document.getElementById('rubberBandEl');
+  if (!rb) {
+    rb = document.createElement('div');
+    rb.id = 'rubberBandEl';
+    rb.className = 'rubber-band';
+    canvas.appendChild(rb);
+  }
+  rb.style.cssText = 'display:block;left:' + x + 'px;top:' + y + 'px;width:0;height:0';
+  document.addEventListener('mousemove', onRbMove);
+  document.addEventListener('mouseup',   onRbEnd);
+}
+
+function onRbMove(e) {
+  if (!_rb) return;
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  _rb.x2 = e.clientX - rect.left;
+  _rb.y2 = e.clientY - rect.top;
+  const rb = document.getElementById('rubberBandEl');
+  if (!rb) return;
+  const x1 = Math.min(_rb.x1, _rb.x2), y1 = Math.min(_rb.y1, _rb.y2);
+  const x2 = Math.max(_rb.x1, _rb.x2), y2 = Math.max(_rb.y1, _rb.y2);
+  rb.style.left = x1 + 'px'; rb.style.top = y1 + 'px';
+  rb.style.width = (x2 - x1) + 'px'; rb.style.height = (y2 - y1) + 'px';
+}
+
+function onRbEnd() {
+  document.removeEventListener('mousemove', onRbMove);
+  document.removeEventListener('mouseup',   onRbEnd);
+  const rb = document.getElementById('rubberBandEl');
+  if (rb) rb.style.display = 'none';
+  if (!_rb) return;
+  const x1 = Math.min(_rb.x1, _rb.x2), y1 = Math.min(_rb.y1, _rb.y2);
+  const x2 = Math.max(_rb.x1, _rb.x2), y2 = Math.max(_rb.y1, _rb.y2);
+  _rb = null;
+  if (x2 - x1 < 8 && y2 - y1 < 8) return;
   _selectedMesas.clear();
+  REST_MESAS.forEach(m => {
+    const cx = m.x + 55, cy = m.y + 55;
+    if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2) _selectedMesas.add(m.id);
+  });
   renderSalon();
 }
 
-function exitSelMode() {
-  _selMode = false;
+function clearSelection() {
   _selectedMesas.clear();
-  renderSalon();
-}
-
-function toggleMesaSelect(id) {
-  if (_selectedMesas.has(id)) _selectedMesas.delete(id);
-  else _selectedMesas.add(id);
   renderSalon();
 }
 
 function deleteSelectedMesas() {
   if (!_selectedMesas.size) return;
+  const n = _selectedMesas.size;
   REST_MESAS = REST_MESAS.filter(m => !_selectedMesas.has(m.id));
   _selectedMesas.forEach(id => { delete REST_COMANDAS[id]; if (ACTIVE_COMANDA === id) ACTIVE_COMANDA = null; });
   saveRestMesas(); saveRestComandas();
-  exitSelMode();
-  toast(`🗑️ Mesas eliminadas`);
+  clearSelection();
+  toast(`🗑️ ${n} mesa${n !== 1 ? 's' : ''} eliminada${n !== 1 ? 's' : ''}`);
 }
 
 /* ── DRAG & DROP ── */
 function startDrag(e, mesaId) {
   if (e.target.classList.contains('mesa-float-del')) return;
-  if (_selMode) { toggleMesaSelect(mesaId); return; }
   e.preventDefault();
   const el = e.currentTarget;
   const m = REST_MESAS.find(x => x.id === mesaId);
@@ -1914,7 +1955,6 @@ function startDrag(e, mesaId) {
 }
 
 function startDragTouch(e, mesaId) {
-  if (_selMode) { toggleMesaSelect(mesaId); return; }
   const t = e.touches[0];
   const m = REST_MESAS.find(x => x.id === mesaId);
   _drag = { mesaId, startX: t.clientX, startY: t.clientY, origX: m.x, origY: m.y, moved: false, el: e.currentTarget };
