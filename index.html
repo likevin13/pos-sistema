@@ -596,6 +596,24 @@
     /* ══ SALON / FLOOR PLAN ══ */
     .salon-wrap { width: 100%; height: calc(100vh - 60px); position: relative; overflow: hidden; }
     .salon-toolbar { position: absolute; top: 16px; right: 20px; z-index: 10; display: flex; gap: 10px; align-items: center; }
+    /* floor plan editor toolbar buttons */
+    .btn-design { padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 600; color: var(--dark); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+    .btn-design:hover { border-color: var(--blue); color: var(--blue); background: rgba(74,127,167,0.06); }
+    .btn-tool { padding: 7px 13px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 600; color: var(--dark); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+    .btn-tool.active { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 2px 10px rgba(74,127,167,0.35); }
+    .btn-tool:hover:not(.active) { border-color: var(--blue); color: var(--blue); background: rgba(74,127,167,0.06); }
+    .btn-tool-done { padding: 7px 16px; border-radius: 8px; border: none; background: #10B981; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700; color: white; transition: opacity 0.15s; }
+    .btn-tool-done:hover { opacity: 0.88; }
+    .tool-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+    /* SVG floor plan layer */
+    .salon-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 1; }
+    /* Design mode cursors */
+    .salon-wrap.salon-design .salon-canvas { cursor: crosshair; }
+    .salon-wrap.salon-design.tool-entrada .salon-canvas { cursor: cell; }
+    .salon-wrap.salon-design.tool-borrar .salon-canvas { cursor: default; }
+    .floor-pared { transition: opacity 0.15s; }
+    .salon-wrap.salon-design .floor-pared:hover { opacity: 0.75; }
+    .salon-wrap.salon-design .floor-entrada:hover { opacity: 0.75; }
     .salon-canvas {
       position: absolute; inset: 0;
       background-color: #f8fafc;
@@ -1200,7 +1218,9 @@
   <div id="view-salon" class="view">
     <div class="salon-wrap">
       <div class="salon-toolbar" id="salonToolbar"></div>
-      <div class="salon-canvas" id="salonCanvas"></div>
+      <div class="salon-canvas" id="salonCanvas">
+        <svg id="salonSvg" class="salon-svg"></svg>
+      </div>
     </div>
   </div>
 
@@ -1812,15 +1832,20 @@ function renderMesas() {
 /* ═══════════════════════════════════════════
    RESTAURANTE — MODO, MESAS Y COMANDAS
 ═══════════════════════════════════════════ */
-let REST_MESAS    = JSON.parse(ls.getItem(K + 'rest_mesas')    ?? '[]');
-let REST_COMANDAS = JSON.parse(ls.getItem(K + 'rest_comandas') ?? '{}');
-let ACTIVE_COMANDA = null;
+let REST_MESAS     = JSON.parse(ls.getItem(K + 'rest_mesas')      ?? '[]');
+let REST_COMANDAS  = JSON.parse(ls.getItem(K + 'rest_comandas')   ?? '{}');
+let REST_ELEMENTOS = JSON.parse(ls.getItem(K + 'rest_elementos')  ?? '[]');
+let ACTIVE_COMANDA  = null;
 let _drag = null;
 let _rb   = null;
-let _selectedMesas = new Set();
+let _selectedMesas    = new Set();
+let _salonDesignMode  = false;
+let _salonTool        = 'pared';   // 'pared' | 'entrada' | 'borrar'
+let _drawState        = null;      // { x1, y1 } during wall draw
 
-function saveRestMesas()    { ls.setItem(K + 'rest_mesas',    JSON.stringify(REST_MESAS)); }
-function saveRestComandas() { ls.setItem(K + 'rest_comandas', JSON.stringify(REST_COMANDAS)); }
+function saveRestMesas()      { ls.setItem(K + 'rest_mesas',      JSON.stringify(REST_MESAS)); }
+function saveRestComandas()   { ls.setItem(K + 'rest_comandas',   JSON.stringify(REST_COMANDAS)); }
+function saveRestElementos()  { ls.setItem(K + 'rest_elementos',  JSON.stringify(REST_ELEMENTOS)); }
 
 /* ── MODE SELECTION ── */
 function showModeOverlay() {
@@ -1842,6 +1867,219 @@ function applyMode(mode) {
   document.querySelectorAll('[data-mode-rest]').forEach(el => {
     el.style.display = mode === 'restaurante' ? '' : 'none';
   });
+}
+
+/* ── FLOOR PLAN EDITOR ── */
+function toggleDesignMode() {
+  _salonDesignMode = !_salonDesignMode;
+  _salonTool = 'pared';
+  _drawState = null;
+  const wrap = document.querySelector('.salon-wrap');
+  if (wrap) {
+    wrap.classList.toggle('salon-design', _salonDesignMode);
+    wrap.classList.remove('tool-pared', 'tool-entrada', 'tool-borrar');
+    if (_salonDesignMode) wrap.classList.add('tool-pared');
+  }
+  renderElements();
+  renderSalon();
+}
+
+function setSalonTool(tool) {
+  _salonTool = tool;
+  _drawState = null;
+  const wrap = document.querySelector('.salon-wrap');
+  if (wrap) {
+    wrap.classList.remove('tool-pared', 'tool-entrada', 'tool-borrar');
+    wrap.classList.add('tool-' + tool);
+  }
+  renderElements();
+  renderSalon();
+}
+
+function renderElements() {
+  const svg = document.getElementById('salonSvg');
+  if (!svg) return;
+  svg.querySelectorAll('.floor-el').forEach(el => el.remove());
+  const NS = 'http://www.w3.org/2000/svg';
+  const canEdit = _salonDesignMode;
+
+  REST_ELEMENTOS.forEach(el => {
+    if (el.type === 'pared') {
+      const rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('class', 'floor-el floor-pared');
+      rect.setAttribute('x', el.x);     rect.setAttribute('y', el.y);
+      rect.setAttribute('width', el.w); rect.setAttribute('height', el.h);
+      rect.setAttribute('fill', '#5c6070');
+      rect.setAttribute('stroke', '#3a3d50');
+      rect.setAttribute('stroke-width', '1');
+      rect.setAttribute('rx', '3');
+      if (canEdit) {
+        rect.style.pointerEvents = 'all';
+        if (_salonTool === 'borrar') {
+          rect.style.cursor = 'pointer';
+          rect.addEventListener('click', ev => {
+            ev.stopPropagation();
+            REST_ELEMENTOS = REST_ELEMENTOS.filter(x => x.id !== el.id);
+            saveRestElementos(); renderElements();
+          });
+        }
+      }
+      svg.appendChild(rect);
+
+    } else if (el.type === 'entrada') {
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'floor-el floor-entrada');
+      const angle = el.angle || 0;
+      const cx = el.x + el.w / 2, cy = el.y + el.w / 2;
+      g.setAttribute('transform', `rotate(${angle},${cx},${cy})`);
+
+      // Door frame posts
+      const post1 = document.createElementNS(NS, 'rect');
+      post1.setAttribute('x', el.x - 4); post1.setAttribute('y', el.y - 12);
+      post1.setAttribute('width', '8');   post1.setAttribute('height', '24');
+      post1.setAttribute('fill', '#5a3b10'); post1.setAttribute('rx', '2');
+      const post2 = document.createElementNS(NS, 'rect');
+      post2.setAttribute('x', el.x + el.w - 4); post2.setAttribute('y', el.y - 12);
+      post2.setAttribute('width', '8');           post2.setAttribute('height', '24');
+      post2.setAttribute('fill', '#5a3b10');       post2.setAttribute('rx', '2');
+
+      // Door swing arc (quarter circle: hinge at left post, swings down)
+      const arc = document.createElementNS(NS, 'path');
+      const r = el.w;
+      arc.setAttribute('d', `M ${el.x + r} ${el.y} A ${r} ${r} 0 0 0 ${el.x} ${el.y + r}`);
+      arc.setAttribute('fill', 'rgba(180,130,40,0.1)');
+      arc.setAttribute('stroke', '#9b7225');
+      arc.setAttribute('stroke-width', '1.5');
+      arc.setAttribute('stroke-dasharray', '5,3');
+
+      // Door leaf (closed position)
+      const leaf = document.createElementNS(NS, 'line');
+      leaf.setAttribute('x1', el.x); leaf.setAttribute('y1', el.y);
+      leaf.setAttribute('x2', el.x + r); leaf.setAttribute('y2', el.y);
+      leaf.setAttribute('stroke', '#9b7225');
+      leaf.setAttribute('stroke-width', '4');
+      leaf.setAttribute('stroke-linecap', 'round');
+
+      // Transparent hit area for clicks
+      const hit = document.createElementNS(NS, 'rect');
+      hit.setAttribute('x', el.x - 8); hit.setAttribute('y', el.y - 16);
+      hit.setAttribute('width', el.w + 16); hit.setAttribute('height', el.w + 20);
+      hit.setAttribute('fill', 'transparent');
+
+      g.appendChild(arc); g.appendChild(post1); g.appendChild(post2); g.appendChild(leaf); g.appendChild(hit);
+
+      if (canEdit) {
+        g.style.pointerEvents = 'all';
+        if (_salonTool === 'borrar') {
+          hit.style.cursor = 'pointer';
+          hit.addEventListener('click', ev => {
+            ev.stopPropagation();
+            REST_ELEMENTOS = REST_ELEMENTOS.filter(x => x.id !== el.id);
+            saveRestElementos(); renderElements();
+          });
+        } else {
+          // click to rotate 90°
+          hit.style.cursor = 'pointer';
+          hit.title = 'Clic para rotar';
+          hit.addEventListener('click', ev => {
+            ev.stopPropagation();
+            el.angle = ((el.angle || 0) + 90) % 360;
+            saveRestElementos(); renderElements();
+          });
+        }
+      }
+      svg.appendChild(g);
+    }
+  });
+  svg.style.pointerEvents = _salonDesignMode ? 'all' : 'none';
+}
+
+/* wall drawing */
+function startDrawPared(e) {
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x = snap(e.clientX - rect.left);
+  const y = snap(e.clientY - rect.top);
+  _drawState = { x1: x, y1: y };
+  const NS  = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('salonSvg');
+  let preview = svg.querySelector('#floorPreview');
+  if (!preview) {
+    preview = document.createElementNS(NS, 'rect');
+    preview.id = 'floorPreview';
+    preview.setAttribute('fill', '#5c6070');
+    preview.setAttribute('stroke', '#3a3d50');
+    preview.setAttribute('stroke-width', '1');
+    preview.setAttribute('rx', '3');
+    preview.setAttribute('opacity', '0.6');
+    preview.style.pointerEvents = 'none';
+    svg.appendChild(preview);
+  }
+  preview.setAttribute('x', x); preview.setAttribute('y', y);
+  preview.setAttribute('width', '0'); preview.setAttribute('height', '0');
+  document.addEventListener('mousemove', onDrawMove);
+  document.addEventListener('mouseup',   onDrawEnd);
+}
+
+function snap(v) { return Math.round(v / 14) * 14; }
+
+function onDrawMove(e) {
+  if (!_drawState) return;
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x2 = snap(e.clientX - rect.left);
+  const y2 = snap(e.clientY - rect.top);
+  const preview = document.getElementById('floorPreview');
+  if (!preview) return;
+  preview.setAttribute('x', Math.min(_drawState.x1, x2));
+  preview.setAttribute('y', Math.min(_drawState.y1, y2));
+  preview.setAttribute('width',  Math.abs(x2 - _drawState.x1));
+  preview.setAttribute('height', Math.abs(y2 - _drawState.y1));
+}
+
+function onDrawEnd(e) {
+  document.removeEventListener('mousemove', onDrawMove);
+  document.removeEventListener('mouseup',   onDrawEnd);
+  const preview = document.getElementById('floorPreview');
+  if (preview) { preview.setAttribute('width', '0'); preview.setAttribute('height', '0'); }
+  if (!_drawState) return;
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x2 = snap(e.clientX - rect.left);
+  const y2 = snap(e.clientY - rect.top);
+  const x = Math.min(_drawState.x1, x2);
+  const y = Math.min(_drawState.y1, y2);
+  const w = Math.abs(x2 - _drawState.x1);
+  const h = Math.abs(y2 - _drawState.y1);
+  _drawState = null;
+  if (w < 14 && h < 14) return; // too small, ignore
+  REST_ELEMENTOS.push({
+    id:   Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    type: 'pared',
+    x, y,
+    w: Math.max(w, 14),
+    h: Math.max(h, 10)
+  });
+  saveRestElementos();
+  renderElements();
+}
+
+/* entrance/door placement */
+function placeEntrada(e) {
+  const canvas = document.getElementById('salonCanvas');
+  const rect   = canvas.getBoundingClientRect();
+  const x = snap(e.clientX - rect.left) - 40;
+  const y = snap(e.clientY - rect.top)  - 5;
+  REST_ELEMENTOS.push({
+    id:    Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    type:  'entrada',
+    x:     Math.round(x),
+    y:     Math.round(y),
+    w:     80,
+    angle: 0
+  });
+  saveRestElementos();
+  renderElements();
 }
 
 /* ── ONBOARDING (nuevo usuario) ── */
@@ -1931,17 +2169,30 @@ function renderSalon() {
   if (!canvas) return;
 
   /* ── toolbar ── */
-  /* ── toolbar ── */
   if (toolbar) {
     const n = _selectedMesas.size;
-    toolbar.innerHTML = n > 0
-      ? `<span class="sel-count-label">${n} mesa${n !== 1 ? 's' : ''} seleccionada${n !== 1 ? 's' : ''}</span>
-         <button class="btn-del-sel" onclick="deleteSelectedMesas()">🗑️ Eliminar</button>
-         <button class="btn-cancel-sel" onclick="clearSelection()">✕</button>`
-      : `<button class="btn-primary" onclick="addRestMesa()">
-           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-           Nueva Mesa
-         </button>`;
+    if (_salonDesignMode) {
+      toolbar.innerHTML = `
+        <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.4px;text-transform:uppercase">Diseñar espacio</span>
+        <div class="tool-sep"></div>
+        <button class="btn-tool ${_salonTool==='pared'   ? 'active' : ''}" onclick="setSalonTool('pared')">🧱 Pared</button>
+        <button class="btn-tool ${_salonTool==='entrada' ? 'active' : ''}" onclick="setSalonTool('entrada')">🚪 Entrada</button>
+        <div class="tool-sep"></div>
+        <button class="btn-tool ${_salonTool==='borrar'  ? 'active' : ''}" onclick="setSalonTool('borrar')" style="${_salonTool==='borrar'?'background:#EF4444;border-color:#EF4444;':''}">🗑️ Borrar</button>
+        <button class="btn-tool-done" onclick="toggleDesignMode()">✓ Listo</button>`;
+    } else if (n > 0) {
+      toolbar.innerHTML = `
+        <span class="sel-count-label">${n} mesa${n !== 1 ? 's' : ''} seleccionada${n !== 1 ? 's' : ''}</span>
+        <button class="btn-del-sel" onclick="deleteSelectedMesas()">🗑️ Eliminar</button>
+        <button class="btn-cancel-sel" onclick="clearSelection()">✕</button>`;
+    } else {
+      toolbar.innerHTML = `
+        <button class="btn-primary" onclick="addRestMesa()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva Mesa
+        </button>
+        <button class="btn-design" onclick="toggleDesignMode()">✏️ Diseñar espacio</button>`;
+    }
   }
 
   /* ── mesas ── */
@@ -1978,6 +2229,7 @@ function renderSalon() {
     canvas.appendChild(el);
   });
   setupSalonCanvas();
+  renderElements();
 }
 
 /* ── RUBBER BAND SELECTION ── */
@@ -1989,8 +2241,16 @@ function setupSalonCanvas() {
   if (!wrap) return;
   wrap.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
-    if (e.target.closest('.mesa-float, .salon-toolbar, button')) return;
-    startRubberBand(e);
+    if (e.target.closest('.salon-toolbar, button')) return;
+    if (_salonDesignMode) {
+      if (e.target.closest('.mesa-float')) return; // mesas still draggable
+      if (e.target.closest('.floor-el')) return;   // SVG element clicks handled by renderElements
+      if (_salonTool === 'pared')   startDrawPared(e);
+      else if (_salonTool === 'entrada') placeEntrada(e);
+    } else {
+      if (e.target.closest('.mesa-float')) return;
+      startRubberBand(e);
+    }
   });
 }
 
@@ -2115,7 +2375,7 @@ function endDrag(e) {
       saveRestMesas();
     }
   } else {
-    openComanda(_drag.mesaId);
+    if (!_salonDesignMode) openComanda(_drag.mesaId);
   }
   _drag.el.style.cursor = '';
   _drag = null;
