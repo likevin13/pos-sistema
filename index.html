@@ -637,24 +637,39 @@
     .btn-bill:hover { background: var(--orange); color: white; }
     .btn-cobrar-mesa { flex: 1.2; padding: 10px 6px; border-radius: 10px; background: linear-gradient(135deg, #0A1931, #1A3D63); color: white; border: none; font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
     .btn-cobrar-mesa:hover { opacity: 0.85; }
-    /* ══ PRODUCT PICKER ══ */
-    .picker-overlay { position: fixed; inset: 0; background: rgba(10,25,49,0.5); z-index: 300; display: none; align-items: flex-end; justify-content: center; }
-    .picker-overlay.open { display: flex; }
-    .picker-sheet { width: 100%; max-width: 500px; background: var(--white); border-radius: 24px 24px 0 0; padding: 20px; max-height: 72vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
-    .picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .picker-title { font-size: 16px; font-weight: 700; color: var(--dark); }
-    .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; overflow-y: auto; flex: 1; padding: 4px 2px; }
-    .picker-card { background: var(--bg); border-radius: 14px; padding: 14px 10px; text-align: center; cursor: pointer; border: 1.5px solid transparent; transition: all 0.18s; }
-    .picker-card:hover { border-color: var(--blue); background: rgba(74,127,167,0.06); transform: translateY(-2px); }
-    .picker-card-emoji { font-size: 26px; margin-bottom: 6px; }
-    .picker-card-name { font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 2px; }
-    .picker-card-price { font-size: 11px; color: var(--muted); }
     body.dark .comanda-panel { background: #0B1929; border-color: rgba(255,255,255,0.06); }
     body.dark .comanda-header, body.dark .comanda-total-box, body.dark .comanda-actions { background: #0F1E35; }
     body.dark .comanda-item { background: #0F1E35; border-color: rgba(255,255,255,0.06); }
     body.dark .comanda-note { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white; }
-    body.dark .picker-sheet { background: #0F1E35; }
-    body.dark .picker-card { background: rgba(255,255,255,0.04); }
+
+    /* ══ PICKER FLOAT (estilo Rappi) ══ */
+    .picker-float { position: fixed; bottom: 22px; left: 18px; right: 418px; z-index: 205; display: none; }
+    .picker-float.open { display: block; }
+    .picker-fpanel { background: var(--white); border-radius: 22px 22px 0 0; overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.28s; box-shadow: 0 -8px 40px rgba(10,25,49,0.12); }
+    .picker-float:hover .picker-fpanel, .picker-float.pinned .picker-fpanel { max-height: 430px; opacity: 1; }
+    .picker-rows { padding: 14px 16px 8px; overflow-y: auto; max-height: 370px; display: flex; flex-direction: column; gap: 5px; }
+    .picker-row { display: flex; align-items: center; gap: 11px; padding: 9px 12px; background: var(--bg); border-radius: 12px; transition: background 0.15s; }
+    .picker-row:hover { background: rgba(74,127,167,0.07); }
+    .pr-emoji { font-size: 22px; flex-shrink: 0; }
+    .pr-info { flex: 1; min-width: 0; }
+    .pr-name  { font-size: 13px; font-weight: 700; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pr-price { font-size: 11px; color: var(--muted); }
+    .pr-ctrl  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .pr-btn   { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--blue); color: white; font-size: 17px; font-weight: 300; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; line-height: 1; }
+    .pr-btn.minus { background: var(--bg); color: var(--dark); border: 1.5px solid var(--border); }
+    .pr-btn:hover { opacity: 0.82; transform: scale(1.1); }
+    .pr-qty { font-size: 14px; font-weight: 700; color: var(--dark); min-width: 18px; text-align: center; }
+    .picker-fbar { background: linear-gradient(135deg, #0A1931 0%, #1A3D63 100%); border-radius: 20px; padding: 13px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-gold); transition: border-radius 0.32s; }
+    .picker-float:hover .picker-fbar, .picker-float.pinned .picker-fbar { border-radius: 0 0 20px 20px; }
+    .pfbar-left  { display: flex; align-items: center; gap: 10px; }
+    .pfbar-badge { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 17px; }
+    .pfbar-title { font-size: 14px; font-weight: 700; color: white; }
+    .pfbar-sub   { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+    .pfbar-arrow { color: rgba(255,255,255,0.35); font-size: 17px; transition: transform 0.3s; margin-right: 4px; }
+    .picker-float:hover .pfbar-arrow, .picker-float.pinned .pfbar-arrow { transform: rotate(180deg); }
+    .pfbar-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.12); border: none; color: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .pfbar-close:hover { background: rgba(255,255,255,0.22); }
+    @media (max-width: 768px) { .picker-float { left: 0; right: 0; bottom: 0; border-radius: 0; } }
 
     /* ══ MESA HOVER TOOLTIP ══ */
     .mesa-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: var(--white); border-radius: 14px; padding: 12px 14px; min-width: 200px; max-width: 250px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: none; z-index: 50; pointer-events: none; }
@@ -1422,7 +1437,7 @@
     </div>
   </div>
   <div class="comanda-items" id="comandaItems"></div>
-  <button class="btn-add-items" onclick="openPickerSheet()">＋ Agregar productos al pedido</button>
+  <button class="btn-add-items" onclick="openPickerFloat()">＋ Agregar productos al pedido</button>
   <div class="comanda-total-box" id="comandaTotalBox"></div>
   <div class="comanda-actions">
     <button class="btn-kitchen" onclick="sendToKitchen()">🍳 A Cocina</button>
@@ -1431,14 +1446,23 @@
   </div>
 </div>
 
-<!-- ═══ PRODUCT PICKER SHEET (Restaurante) ═══ -->
-<div class="picker-overlay" id="pickerOverlay" onclick="closePickerSheet(event)">
-  <div class="picker-sheet" onclick="event.stopPropagation()">
-    <div class="picker-header">
-      <div class="picker-title">Agregar a <span id="pickerMesaLabel"></span></div>
-      <button class="comanda-close" onclick="closePickerSheet()">✕</button>
+<!-- ═══ PRODUCT PICKER FLOAT (Restaurante) ═══ -->
+<div class="picker-float" id="pickerFloat">
+  <div class="picker-fpanel">
+    <div class="picker-rows" id="pickerRows"></div>
+  </div>
+  <div class="picker-fbar" onclick="document.getElementById('pickerFloat').classList.toggle('pinned')">
+    <div class="pfbar-left">
+      <div class="pfbar-badge">🛒</div>
+      <div>
+        <div class="pfbar-title" id="pfbarTitle">Agregar a Mesa</div>
+        <div class="pfbar-sub"  id="pfbarSub">Toca para ver el menú ▸</div>
+      </div>
     </div>
-    <div class="picker-grid" id="pickerGrid"></div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="pfbar-arrow">▾</span>
+      <button class="pfbar-close" onclick="event.stopPropagation(); closePickerFloat()">✕</button>
+    </div>
   </div>
 </div>
 
@@ -2032,6 +2056,7 @@ function closeComanda() {
   ACTIVE_COMANDA = null;
   document.getElementById('comandaBg').classList.remove('open');
   document.getElementById('comandaPanel').classList.remove('open');
+  closePickerFloat();
   renderSalon();
 }
 
@@ -2126,47 +2151,70 @@ function payMesa() {
   openPayment();
 }
 
-/* ── PRODUCT PICKER ── */
-function openPickerSheet() {
+/* ── PRODUCT PICKER FLOAT ── */
+function openPickerFloat() {
   if (!ACTIVE_COMANDA) return;
   const m = REST_MESAS.find(x => x.id === ACTIVE_COMANDA);
-  document.getElementById('pickerMesaLabel').textContent = 'Mesa ' + (m ? m.numero : '');
-  const grid = document.getElementById('pickerGrid');
+  document.getElementById('pfbarTitle').textContent = 'Mesa ' + (m ? m.numero : '');
+  renderPickerRows();
+  const f = document.getElementById('pickerFloat');
+  f.classList.add('open', 'pinned');
+}
+
+function closePickerFloat() {
+  document.getElementById('pickerFloat').classList.remove('open', 'pinned');
+}
+
+function renderPickerRows() {
+  if (!ACTIVE_COMANDA) return;
+  const c     = REST_COMANDAS[ACTIVE_COMANDA] || { items: [] };
+  const total = (c.items || []).reduce((s, i) => s + i.qty, 0);
+  document.getElementById('pfbarSub').textContent = total
+    ? `${total} ítem${total !== 1 ? 's' : ''} en la comanda`
+    : 'Toca para ver el menú ▸';
+  const rows = document.getElementById('pickerRows');
   if (!APP.products.length) {
-    grid.innerHTML = '<div class="comanda-empty"><p>No hay productos registrados</p></div>';
-  } else {
-    grid.innerHTML = APP.products.map(p => `
-      <div class="picker-card" onclick="addToComanda('${p.id}')">
-        <div class="picker-card-emoji">${p.emoji}</div>
-        <div class="picker-card-name">${p.name}</div>
-        <div class="picker-card-price">${fmt(fp(p))}</div>
-      </div>`).join('');
+    rows.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No hay productos registrados</div>';
+    return;
   }
-  document.getElementById('pickerOverlay').classList.add('open');
+  rows.innerHTML = APP.products.map(p => {
+    const existing = (c.items || []).find(i => i.id === p.id);
+    const qty = existing ? existing.qty : 0;
+    return `<div class="picker-row">
+      <span class="pr-emoji">${p.emoji}</span>
+      <div class="pr-info">
+        <div class="pr-name">${p.name}</div>
+        <div class="pr-price">${fmt(fp(p))}</div>
+      </div>
+      <div class="pr-ctrl">
+        ${qty > 0 ? `<button class="pr-btn minus" onclick="pickerQty('${p.id}',-1)">−</button><span class="pr-qty">${qty}</span>` : ''}
+        <button class="pr-btn" onclick="pickerQty('${p.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function closePickerSheet(e) {
-  if (e && e.target !== document.getElementById('pickerOverlay')) return;
-  document.getElementById('pickerOverlay').classList.remove('open');
-}
-
-function addToComanda(prodId) {
+function pickerQty(prodId, delta) {
   if (!ACTIVE_COMANDA) return;
   const p = APP.products.find(x => x.id === prodId);
   if (!p) return;
   if (!REST_COMANDAS[ACTIVE_COMANDA]) {
     REST_COMANDAS[ACTIVE_COMANDA] = { items: [], estado: 'en_curso', timestamp: Date.now() };
   }
-  const c = REST_COMANDAS[ACTIVE_COMANDA];
+  const c        = REST_COMANDAS[ACTIVE_COMANDA];
   const existing = c.items.find(i => i.id === prodId);
-  if (existing) { existing.qty++; }
-  else { c.items.push({ id: p.id, name: p.name, emoji: p.emoji, qty: 1, unitPrice: fp(p), cost: p.cost || 0, nota: '' }); }
-  if (c.estado === 'libre') c.estado = 'en_curso';
+  if (delta > 0) {
+    if (existing) existing.qty++;
+    else c.items.push({ id: p.id, name: p.name, emoji: p.emoji, qty: 1, unitPrice: fp(p), cost: p.cost || 0, nota: '' });
+    if (c.estado === 'libre') c.estado = 'en_curso';
+  } else if (existing) {
+    existing.qty = Math.max(0, existing.qty - 1);
+    if (existing.qty === 0) c.items = c.items.filter(i => i.id !== prodId);
+  }
   saveRestComandas();
+  renderPickerRows();
   renderComandaItems(ACTIVE_COMANDA);
   renderSalon();
-  document.getElementById('pickerOverlay').classList.remove('open');
-  toast(`✓ ${p.emoji} ${p.name} agregado`);
 }
 
 /* ── COMANDA TICKET ── */
